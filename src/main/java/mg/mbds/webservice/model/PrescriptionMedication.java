@@ -3,6 +3,9 @@ package mg.mbds.webservice.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+@Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "prescription_medication", uniqueConstraints = {
     @UniqueConstraint(name = "uq_pm_prescription_medicament", columnNames = {"prescription_id", "medication_id"})
