@@ -1,0 +1,13 @@
+com\mbds\ws\model\Stay.class
+com\mbds\ws\model\Patient.class
+com\mbds\ws\model\PrescriptionStatus.class
+com\mbds\ws\model\Medication.class
+com\mbds\ws\model\User.class
+com\mbds\ws\model\RoomType.class
+com\mbds\ws\model\Prescription.class
+com\mbds\ws\WebserviceApplication.class
+com\mbds\ws\model\AdministrationRoute.class
+com\mbds\ws\model\StayOutcome.class
+com\mbds\ws\model\Room.class
+com\mbds\ws\model\Role.class
+com\mbds\ws\model\PrescriptionMedication.class
