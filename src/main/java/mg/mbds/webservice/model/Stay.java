@@ -2,6 +2,8 @@ package mg.mbds.webservice.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import mg.mbds.webservice.enums.StayOutcome;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -9,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Stay {
+public class    Stay {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

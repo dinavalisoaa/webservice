@@ -13,7 +13,7 @@ import mg.mbds.webservice.model.User;
 import mg.mbds.webservice.repository.UserRepository;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @CrossOrigin("*")
 public class AuthController {
 

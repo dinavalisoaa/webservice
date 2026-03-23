@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import mg.mbds.webservice.model.Role;
+import mg.mbds.webservice.enums.Role;
 
 @Getter @Setter
 @NoArgsConstructor

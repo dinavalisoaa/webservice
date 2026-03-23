@@ -2,6 +2,7 @@ package mg.mbds.webservice.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import mg.mbds.webservice.enums.AdministrationRoute;
 
 @Getter @Setter
 @NoArgsConstructor

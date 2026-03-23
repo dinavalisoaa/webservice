@@ -2,6 +2,8 @@ package mg.mbds.webservice.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import mg.mbds.webservice.enums.Role;
+
 import java.time.LocalDateTime;
 
 @Getter @Setter

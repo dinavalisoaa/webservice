@@ -1,4 +1,4 @@
-package mg.mbds.webservice.model;
+package mg.mbds.webservice.enums;
 
 public enum Role {
     ADMIN, DOCTOR, NURSE

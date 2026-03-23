@@ -2,6 +2,7 @@ package mg.mbds.webservice.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import mg.mbds.webservice.enums.BloodGroup;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -32,8 +33,9 @@ public class Patient {
     @Column(length = 255)
     private String address;
 
-    @Column(name = "blood_group", length = 5)
-    private String bloodGroup;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "blood_group", length = 15)
+    private BloodGroup bloodGroup;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
