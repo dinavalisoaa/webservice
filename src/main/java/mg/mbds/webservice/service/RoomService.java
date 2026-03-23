@@ -2,8 +2,8 @@ package mg.mbds.webservice.service;
 
 import mg.mbds.webservice.exception.ResourceNotFoundException;
 import mg.mbds.webservice.model.Patient;
+import mg.mbds.webservice.enums.RoomType;
 import mg.mbds.webservice.model.Room;
-import mg.mbds.webservice.model.RoomType;
 import mg.mbds.webservice.repository.RoomRepository;
 import mg.mbds.webservice.repository.RoomSpecification;
 import mg.mbds.webservice.repository.StayRepository;

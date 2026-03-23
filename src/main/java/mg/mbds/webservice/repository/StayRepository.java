@@ -8,6 +8,7 @@ import java.util.List;
 
 @Repository
 public interface StayRepository extends JpaRepository<Stay, Long> {
+    List<Stay> findByPatientId(Long patientId);
 
     List<Stay> findByRoomIdAndEndDateIsNull(Long roomId);
 }

@@ -3,9 +3,9 @@ package mg.mbds.webservice.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
+import mg.mbds.webservice.enums.RoomType;
 import mg.mbds.webservice.model.Patient;
 import mg.mbds.webservice.model.Room;
-import mg.mbds.webservice.model.RoomType;
 import mg.mbds.webservice.service.RoomService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.CollectionModel;
@@ -25,7 +25,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
-@RequestMapping("/api/rooms")
+@RequestMapping("/rooms")
 public class RoomController {
 
     private final RoomService roomService;
