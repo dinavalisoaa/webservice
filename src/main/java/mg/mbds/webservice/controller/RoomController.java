@@ -3,6 +3,7 @@ package mg.mbds.webservice.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
+import mg.mbds.webservice.model.Patient;
 import mg.mbds.webservice.model.Room;
 import mg.mbds.webservice.model.RoomType;
 import mg.mbds.webservice.service.RoomService;
@@ -12,6 +13,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,7 +35,7 @@ public class RoomController {
     }
 
     @Operation(summary = "Lister les chambres disponibles",
-               description = "Retourne les chambres non en maintenance dont la capacité n'est pas atteinte à la date donnée (par défaut aujourd'hui). Tous les filtres sont optionnels.")
+               description = "Retourne les chambres non en maintenance dont la capacité n'est pas atteinte à la date donnée (par défaut aujourd'hui)")
     @GetMapping("/available")
     public ResponseEntity<CollectionModel<EntityModel<Room>>> getAvailableRooms(
             @Parameter(description = "Type de chambre") @RequestParam(required = false) RoomType type,
@@ -59,5 +61,27 @@ public class RoomController {
                 .withSelfRel();
 
         return ResponseEntity.ok(CollectionModel.of(rooms, selfLink));
+    }
+
+    @Operation(summary = "Lister les patients actuellement présents dans une chambre",
+               description = "Retourne les patients dont le séjour dans la chambre n'a pas encore de date de fin (endDate est null)")
+    @GetMapping("/{id}/patients")
+    public ResponseEntity<CollectionModel<EntityModel<Patient>>> getCurrentPatients(
+            @Parameter(description = "Identifiant de la chambre") @PathVariable Long id
+    ) {
+        List<EntityModel<Patient>> patients = roomService.getCurrentPatientsInRoom(id)
+                .stream()
+                .map(patient -> EntityModel.of(patient,
+                        Link.of("/api/patients/" + patient.getId()).withSelfRel(),
+                        linkTo(methodOn(RoomController.class).getCurrentPatients(id)).withRel("room-patients")))
+                .toList();
+
+        Link selfLink = linkTo(methodOn(RoomController.class).getCurrentPatients(id)).withSelfRel();
+        Link roomLink = linkTo(methodOn(RoomController.class)
+                .getAvailableRooms(null, null, null, null, null))
+                .slash(id)
+                .withRel("room");
+
+        return ResponseEntity.ok(CollectionModel.of(patients, selfLink, roomLink));
     }
 }
