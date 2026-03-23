@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/stays")
+@RequestMapping("/stays")
 public class StayController {
 
     private final StayService stayService;
