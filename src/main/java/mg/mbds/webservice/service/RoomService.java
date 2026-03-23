@@ -1,9 +1,12 @@
 package mg.mbds.webservice.service;
 
+import mg.mbds.webservice.exception.ResourceNotFoundException;
+import mg.mbds.webservice.model.Patient;
 import mg.mbds.webservice.model.Room;
 import mg.mbds.webservice.model.RoomType;
 import mg.mbds.webservice.repository.RoomRepository;
 import mg.mbds.webservice.repository.RoomSpecification;
+import mg.mbds.webservice.repository.StayRepository;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -14,9 +17,11 @@ import java.util.List;
 public class RoomService {
 
     private final RoomRepository roomRepository;
+    private final StayRepository stayRepository;
 
-    public RoomService(RoomRepository roomRepository) {
+    public RoomService(RoomRepository roomRepository, StayRepository stayRepository) {
         this.roomRepository = roomRepository;
+        this.stayRepository = stayRepository;
     }
 
     public List<Room> getAvailableRooms(RoomType type, Integer minCapacity,
@@ -32,5 +37,15 @@ public class RoomService {
                 .and(RoomSpecification.hasPriceLessThanOrEqual(maxPrice));
 
         return roomRepository.findAll(spec);
+    }
+
+    public List<Patient> getCurrentPatientsInRoom(Long roomId) {
+        if (!roomRepository.existsById(roomId)) {
+            throw new ResourceNotFoundException("Chambre introuvable : id=" + roomId);
+        }
+        return stayRepository.findByRoomIdAndEndDateIsNull(roomId)
+                .stream()
+                .map(stay -> stay.getPatient())
+                .toList();
     }
 }
