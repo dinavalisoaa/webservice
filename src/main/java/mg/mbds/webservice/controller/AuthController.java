@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import mg.mbds.webservice.dto.LoginDTO;
+import mg.mbds.webservice.dto.RegisterDTO;
 import mg.mbds.webservice.service.AuthService;
 import mg.mbds.webservice.model.User;
-import mg.mbds.webservice.model.Role;
 import mg.mbds.webservice.repository.UserRepository;
 
 @RestController
@@ -36,11 +36,22 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
-        user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
-        if(user.getRole() == null) {
-            user.setRole(Role.NURSE);
+    public ResponseEntity<?> register(@RequestBody RegisterDTO registerDTO) {
+        if (registerDTO.getRole() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Role is required");
         }
+        if (registerDTO.getPassword() == null || !registerDTO.getPassword().equals(registerDTO.getConfirmPassword())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Passwords do not match");
+        }
+
+        User user = new User();
+        user.setUsername(registerDTO.getUsername());
+        user.setEmail(registerDTO.getEmail());
+        user.setFirstName(registerDTO.getFirstName());
+        user.setLastName(registerDTO.getLastName());
+        user.setRole(registerDTO.getRole());
+        user.setPasswordHash(passwordEncoder.encode(registerDTO.getPassword()));
+
         userRepository.save(user);
         return ResponseEntity.ok(user);
     }
