@@ -1,5 +1,7 @@
 package mg.mbds.webservice.service;
 
+import mg.mbds.webservice.dto.PatientStayDTO;
+import mg.mbds.webservice.exception.ResourceNotFoundException;
 import mg.mbds.webservice.model.Patient;
 import mg.mbds.webservice.model.Room;
 import mg.mbds.webservice.model.Stay;
@@ -72,6 +74,15 @@ public class StayService {
             existing.setDoctor(doctor);
         }
         return stayRepository.save(existing);
+    }
+
+    public List<PatientStayDTO> getByPatientId(Long patientId) {
+        if (!patientRepository.existsById(patientId)) {
+            throw new ResourceNotFoundException("Patient not found: " + patientId);
+        }
+        return stayRepository.findByPatientId(patientId).stream()
+                .map(PatientStayDTO::new)
+                .toList();
     }
 
     public void delete(Long id) {

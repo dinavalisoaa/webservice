@@ -1,8 +1,10 @@
 package mg.mbds.webservice.controller;
 
+import mg.mbds.webservice.dto.PatientStayDTO;
 import mg.mbds.webservice.model.Patient;
 import mg.mbds.webservice.responses.SuccessResponse;
 import mg.mbds.webservice.service.PatientService;
+import mg.mbds.webservice.service.StayService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,9 +15,11 @@ import java.util.List;
 public class PatientController {
 
     private final PatientService patientService;
+    private final StayService stayService;
 
-    public PatientController(PatientService patientService) {
+    public PatientController(PatientService patientService, StayService stayService) {
         this.patientService = patientService;
+        this.stayService = stayService;
     }
 
     @GetMapping
@@ -37,6 +41,11 @@ public class PatientController {
     @PutMapping("/{id}")
     public SuccessResponse<Patient> update(@PathVariable Long id, @RequestBody Patient patient) {
         return SuccessResponse.of(patientService.update(id, patient));
+    }
+
+    @GetMapping("/{id}/stays")
+    public SuccessResponse<List<PatientStayDTO>> getStays(@PathVariable Long id) {
+        return SuccessResponse.of(stayService.getByPatientId(id));
     }
 
     @DeleteMapping("/{id}")
