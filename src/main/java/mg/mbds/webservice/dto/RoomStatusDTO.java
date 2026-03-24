@@ -2,7 +2,7 @@ package mg.mbds.webservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import mg.mbds.webservice.model.RoomType;
+import mg.mbds.webservice.enums.RoomType;
 
 @Getter
 @AllArgsConstructor
