@@ -29,11 +29,11 @@ public class SecurityConfig {
                 ) 
             ) 
             .authorizeHttpRequests(auth -> auth 
-                .requestMatchers("/api/auth/**", "/api/hello/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                .requestMatchers( 
-                    HttpMethod.GET, "/api/products" 
-                ).permitAll() 
-                .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers("/auth/**", "/hello/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                .requestMatchers(
+                    HttpMethod.GET, "/products"
+                ).permitAll()
+                .requestMatchers(HttpMethod.DELETE, "/products/**").hasAuthority("ROLE_ADMIN")
                 .anyRequest().authenticated() 
             ) 
             .addFilterBefore( 
