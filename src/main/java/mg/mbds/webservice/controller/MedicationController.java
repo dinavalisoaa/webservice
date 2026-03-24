@@ -1,5 +1,6 @@
 package mg.mbds.webservice.controller;
 
+import mg.mbds.webservice.dto.MedicationStockAlertDTO;
 import mg.mbds.webservice.model.Medication;
 import mg.mbds.webservice.responses.SuccessResponse;
 import mg.mbds.webservice.service.MedicationService;
@@ -21,6 +22,11 @@ public class MedicationController {
     @GetMapping
     public SuccessResponse<List<Medication>> getAll() {
         return SuccessResponse.of(medicationService.getAll());
+    }
+
+    @GetMapping("/stock-alerts")
+    public SuccessResponse<List<MedicationStockAlertDTO>> getStockAlerts() {
+        return SuccessResponse.of(medicationService.getStockAlerts());
     }
 
     @GetMapping("/{id}")

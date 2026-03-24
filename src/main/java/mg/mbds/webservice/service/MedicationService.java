@@ -1,9 +1,12 @@
 package mg.mbds.webservice.service;
 
+import mg.mbds.webservice.dto.MedicationStockAlertDTO;
 import mg.mbds.webservice.model.Medication;
 import mg.mbds.webservice.repository.MedicationRepository;
 import org.springframework.stereotype.Service;
+import mg.mbds.webservice.enums.StockAlertLevel;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -42,5 +45,33 @@ public class MedicationService {
 
     public void delete(Long id) {
         medicationRepository.deleteById(id);
+    }
+
+    public List<MedicationStockAlertDTO> getStockAlerts() {
+        List<MedicationStockAlertDTO> medications = medicationRepository.findAllWithPrescriptionCount();
+
+        double avgPrescriptions = medications.stream()
+                .mapToLong(MedicationStockAlertDTO::getPrescriptionCount)
+                .average()
+                .orElse(0);
+
+        for (MedicationStockAlertDTO m : medications) {
+            boolean lowStock = m.getStock() <= m.getAlertThreshold();
+            boolean highlyPrescribed = m.getPrescriptionCount() > avgPrescriptions;
+
+            if (lowStock && highlyPrescribed) {
+                m.setStockAlertLevel(StockAlertLevel.URGENT);
+            } else if (lowStock) {
+                m.setStockAlertLevel(StockAlertLevel.LOW);
+            } else {
+                m.setStockAlertLevel(StockAlertLevel.OK);
+            }
+        }
+
+        medications.sort(Comparator
+                .comparing(MedicationStockAlertDTO::getStockAlertLevel).reversed()
+                .thenComparing(Comparator.comparingLong(MedicationStockAlertDTO::getPrescriptionCount).reversed()));
+
+        return medications;
     }
 }
