@@ -3,7 +3,7 @@ package mg.mbds.webservice.repository;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import mg.mbds.webservice.model.Room;
-import mg.mbds.webservice.model.RoomType;
+import mg.mbds.webservice.enums.RoomType;
 import mg.mbds.webservice.model.Stay;
 import org.springframework.data.jpa.domain.Specification;
 

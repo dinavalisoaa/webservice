@@ -1,5 +1,6 @@
 package mg.mbds.webservice.service;
 
+import mg.mbds.webservice.dto.RoomStatusDTO;
 import mg.mbds.webservice.exception.ResourceNotFoundException;
 import mg.mbds.webservice.model.Patient;
 import mg.mbds.webservice.enums.RoomType;
@@ -46,6 +47,32 @@ public class RoomService {
         return stayRepository.findByRoomIdAndEndDateIsNull(roomId)
                 .stream()
                 .map(stay -> stay.getPatient())
+                .toList();
+    }
+
+    public List<RoomStatusDTO> getAllRoomStatuses() {
+        return roomRepository.findAllWithCurrentOccupancy()
+                .stream()
+                .map(row -> {
+                    Room room = (Room) row[0];
+                    int occupancy = ((Long) row[1]).intValue();
+                    int available = room.getCapacity() - occupancy;
+
+                    String status;
+                    if (Boolean.TRUE.equals(room.getUnderMaintenance())) {
+                        status = "UNDER_MAINTENANCE";
+                    } else if (available <= 0) {
+                        status = "COMPLETE";
+                    } else {
+                        status = "AVAILABLE";
+                    }
+
+                    return new RoomStatusDTO(
+                            room.getId(), room.getNumber(), room.getType(),
+                            room.getCapacity(), occupancy, Math.max(available, 0),
+                            room.getUnderMaintenance(), room.getPricePerNight(), status
+                    );
+                })
                 .toList();
     }
 }
