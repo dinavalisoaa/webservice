@@ -1,5 +1,6 @@
 package mg.mbds.webservice.controller;
 
+import mg.mbds.webservice.dto.PatientMedicalHistoryDTO;
 import mg.mbds.webservice.dto.PatientStayDTO;
 import mg.mbds.webservice.model.Patient;
 import mg.mbds.webservice.responses.SuccessResponse;
@@ -46,6 +47,11 @@ public class PatientController {
     @GetMapping("/{id}/stays")
     public SuccessResponse<List<PatientStayDTO>> getStays(@PathVariable Long id) {
         return SuccessResponse.of(stayService.getByPatientId(id));
+    }
+
+    @GetMapping("/{id}/medical-history")
+    public SuccessResponse<PatientMedicalHistoryDTO> getMedicalHistory(@PathVariable Long id) {
+        return SuccessResponse.of(patientService.getMedicalHistory(id));
     }
 
     @DeleteMapping("/{id}")
