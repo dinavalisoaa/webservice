@@ -71,8 +71,8 @@ public class RoomService {
     }
 
     private String resolveRoomStatus(Room room, int available) {
-        if (Boolean.TRUE.equals(room.getUnderMaintenance())) return RoomStatus.UNDER_MAINTENANCE;
-        if (available <= 0) return RoomStatus.COMPLETE;
-        return RoomStatus.AVAILABLE;
+        if (Boolean.TRUE.equals(room.getUnderMaintenance())) return RoomStatus.UNDER_MAINTENANCE.name();
+        if (available <= 0) return RoomStatus.COMPLETE.name();
+        return RoomStatus.AVAILABLE.name();
     }
 }

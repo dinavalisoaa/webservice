@@ -1,6 +1,7 @@
 package mg.mbds.webservice.service.sse;
 
 import mg.mbds.webservice.dto.RoomStatusDTO;
+import mg.mbds.webservice.service.RoomService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
