@@ -1,10 +1,11 @@
 package mg.mbds.webservice.service;
 
 import mg.mbds.webservice.dto.MedicationStockAlertDTO;
+import mg.mbds.webservice.enums.StockAlertLevel;
+import mg.mbds.webservice.exception.ResourceNotFoundException;
 import mg.mbds.webservice.model.Medication;
 import mg.mbds.webservice.repository.MedicationRepository;
 import org.springframework.stereotype.Service;
-import mg.mbds.webservice.enums.StockAlertLevel;
 
 import java.util.Comparator;
 import java.util.List;
@@ -24,7 +25,7 @@ public class MedicationService {
 
     public Medication getById(Long id) {
         return medicationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Medication not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Medication not found: " + id));
     }
 
     public Medication create(Medication medication) {
@@ -49,29 +50,36 @@ public class MedicationService {
 
     public List<MedicationStockAlertDTO> getStockAlerts() {
         List<MedicationStockAlertDTO> medications = medicationRepository.findAllWithPrescriptionCount();
+        double avg = computeAveragePrescriptions(medications);
+        assignAlertLevels(medications, avg);
+        sortByUrgency(medications);
+        return medications;
+    }
 
-        double avgPrescriptions = medications.stream()
+    private double computeAveragePrescriptions(List<MedicationStockAlertDTO> medications) {
+        return medications.stream()
                 .mapToLong(MedicationStockAlertDTO::getPrescriptionCount)
                 .average()
                 .orElse(0);
+    }
 
+    private void assignAlertLevels(List<MedicationStockAlertDTO> medications, double avg) {
         for (MedicationStockAlertDTO m : medications) {
-            boolean lowStock = m.getStock() <= m.getAlertThreshold();
-            boolean highlyPrescribed = m.getPrescriptionCount() > avgPrescriptions;
-
-            if (lowStock && highlyPrescribed) {
-                m.setStockAlertLevel(StockAlertLevel.URGENT);
-            } else if (lowStock) {
-                m.setStockAlertLevel(StockAlertLevel.LOW);
-            } else {
-                m.setStockAlertLevel(StockAlertLevel.OK);
-            }
+            m.setStockAlertLevel(resolveAlertLevel(m, avg));
         }
+    }
 
+    private StockAlertLevel resolveAlertLevel(MedicationStockAlertDTO m, double avg) {
+        boolean lowStock = m.getStock() <= m.getAlertThreshold();
+        boolean highlyPrescribed = m.getPrescriptionCount() > avg;
+        if (lowStock && highlyPrescribed) return StockAlertLevel.URGENT;
+        if (lowStock) return StockAlertLevel.LOW;
+        return StockAlertLevel.OK;
+    }
+
+    private void sortByUrgency(List<MedicationStockAlertDTO> medications) {
         medications.sort(Comparator
                 .comparing(MedicationStockAlertDTO::getStockAlertLevel).reversed()
                 .thenComparing(Comparator.comparingLong(MedicationStockAlertDTO::getPrescriptionCount).reversed()));
-
-        return medications;
     }
 }
