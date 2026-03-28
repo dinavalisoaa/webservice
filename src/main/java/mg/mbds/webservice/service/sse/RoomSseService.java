@@ -26,7 +26,6 @@ public class RoomSseService {
         emitter.onTimeout(() -> emitters.remove(emitter));
         emitter.onError(e -> emitters.remove(emitter));
 
-        // Envoi immédiat de l'état courant à la connexion
         try {
             emitter.send(SseEmitter.event()
                     .name("room-status")

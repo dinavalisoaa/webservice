@@ -37,7 +37,7 @@ public class PatientService {
 
     public Patient getById(Long id) {
         return patientRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Patient not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found: " + id));
     }
 
     public Patient create(Patient patient) {
@@ -61,30 +61,33 @@ public class PatientService {
     }
 
     public PatientMedicalHistoryDTO getMedicalHistory(Long patientId) {
-        Patient patient = patientRepository.findById(patientId)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient not found: " + patientId));
-
-        List<Stay> stays = stayRepository.findByPatientId(patientId);
-
-        List<PatientMedicalHistoryDTO.StayHistoryDTO> stayDTOs = stays.stream()
-                .map(stay -> {
-                    List<Prescription> prescriptions = prescriptionRepository.findByStayId(stay.getId());
-
-                    List<PatientMedicalHistoryDTO.PrescriptionHistoryDTO> prescriptionDTOs = prescriptions.stream()
-                            .map(prescription -> {
-                                List<PatientMedicalHistoryDTO.MedicationDetailDTO> medicationDTOs =
-                                        prescriptionMedicationRepository.findByPrescriptionId(prescription.getId())
-                                                .stream()
-                                                .map(PatientMedicalHistoryDTO.MedicationDetailDTO::new)
-                                                .toList();
-                                return new PatientMedicalHistoryDTO.PrescriptionHistoryDTO(prescription, medicationDTOs);
-                            })
-                            .toList();
-
-                    return new PatientMedicalHistoryDTO.StayHistoryDTO(stay, prescriptionDTOs);
-                })
+        Patient patient = getById(patientId);
+        List<PatientMedicalHistoryDTO.StayHistoryDTO> stayDTOs = stayRepository.findByPatientId(patientId)
+                .stream()
+                .map(this::toStayHistoryDTO)
                 .toList();
-
         return new PatientMedicalHistoryDTO(patient, stayDTOs);
+    }
+
+    private PatientMedicalHistoryDTO.StayHistoryDTO toStayHistoryDTO(Stay stay) {
+        List<PatientMedicalHistoryDTO.PrescriptionHistoryDTO> prescriptionDTOs =
+                toPrescriptionHistoryDTOs(stay.getId());
+        return new PatientMedicalHistoryDTO.StayHistoryDTO(stay, prescriptionDTOs);
+    }
+
+    private List<PatientMedicalHistoryDTO.PrescriptionHistoryDTO> toPrescriptionHistoryDTOs(Long stayId) {
+        return prescriptionRepository.findByStayId(stayId)
+                .stream()
+                .map(this::toPrescriptionHistoryDTO)
+                .toList();
+    }
+
+    private PatientMedicalHistoryDTO.PrescriptionHistoryDTO toPrescriptionHistoryDTO(Prescription prescription) {
+        List<PatientMedicalHistoryDTO.MedicationDetailDTO> medicationDTOs =
+                prescriptionMedicationRepository.findByPrescriptionId(prescription.getId())
+                        .stream()
+                        .map(PatientMedicalHistoryDTO.MedicationDetailDTO::new)
+                        .toList();
+        return new PatientMedicalHistoryDTO.PrescriptionHistoryDTO(prescription, medicationDTOs);
     }
 }
