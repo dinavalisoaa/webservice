@@ -1,5 +1,6 @@
 package mg.mbds.webservice.service;
 
+import mg.mbds.webservice.exception.ResourceNotFoundException;
 import mg.mbds.webservice.model.Medication;
 import mg.mbds.webservice.model.Prescription;
 import mg.mbds.webservice.model.PrescriptionMedication;
@@ -41,16 +42,12 @@ public class PrescriptionService {
 
     public Prescription getById(Long id) {
         return prescriptionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Prescription not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Prescription not found: " + id));
     }
 
     public Prescription create(Prescription prescription, Long stayId, Long doctorId) {
-        Stay stay = stayRepository.findById(stayId)
-                .orElseThrow(() -> new RuntimeException("Stay not found: " + stayId));
-        User doctor = userRepository.findById(doctorId)
-                .orElseThrow(() -> new RuntimeException("Doctor not found: " + doctorId));
-        prescription.setStay(stay);
-        prescription.setDoctor(doctor);
+        prescription.setStay(findStay(stayId));
+        prescription.setDoctor(findDoctor(doctorId));
         return prescriptionRepository.save(prescription);
     }
 
@@ -73,20 +70,32 @@ public class PrescriptionService {
     }
 
     public PrescriptionMedication addMedication(Long prescriptionId, PrescriptionMedication pm, Long medicationId) {
-        Prescription prescription = getById(prescriptionId);
-        Medication medication = medicationRepository.findById(medicationId)
-                .orElseThrow(() -> new RuntimeException("Medication not found: " + medicationId));
-        pm.setPrescription(prescription);
-        pm.setMedication(medication);
+        pm.setPrescription(getById(prescriptionId));
+        pm.setMedication(findMedication(medicationId));
         return prescriptionMedicationRepository.save(pm);
     }
 
     public void removeMedication(Long prescriptionId, Long pmId) {
         PrescriptionMedication pm = prescriptionMedicationRepository.findById(pmId)
-                .orElseThrow(() -> new RuntimeException("PrescriptionMedication not found: " + pmId));
+                .orElseThrow(() -> new ResourceNotFoundException("PrescriptionMedication not found: " + pmId));
         if (!pm.getPrescription().getId().equals(prescriptionId)) {
-            throw new RuntimeException("PrescriptionMedication does not belong to prescription: " + prescriptionId);
+            throw new IllegalArgumentException("PrescriptionMedication does not belong to prescription: " + prescriptionId);
         }
         prescriptionMedicationRepository.deleteById(pmId);
+    }
+
+    private Stay findStay(Long id) {
+        return stayRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Stay not found: " + id));
+    }
+
+    private User findDoctor(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found: " + id));
+    }
+
+    private Medication findMedication(Long id) {
+        return medicationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Medication not found: " + id));
     }
 }
