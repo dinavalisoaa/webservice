@@ -5,6 +5,7 @@ import mg.mbds.webservice.model.Medication;
 import mg.mbds.webservice.responses.SuccessResponse;
 import mg.mbds.webservice.service.MedicationService;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,32 +21,38 @@ public class MedicationController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('MEDICATION_READ')")
     public SuccessResponse<List<Medication>> getAll() {
         return SuccessResponse.of(medicationService.getAll());
     }
 
     @GetMapping("/stock-alerts")
+    @PreAuthorize("hasAuthority('MEDICATION_READ')")
     public SuccessResponse<List<MedicationStockAlertDTO>> getStockAlerts() {
         return SuccessResponse.of(medicationService.getStockAlerts());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('MEDICATION_READ')")
     public SuccessResponse<Medication> getById(@PathVariable Long id) {
         return SuccessResponse.of(medicationService.getById(id));
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('MEDICATION_WRITE')")
     @ResponseStatus(HttpStatus.CREATED)
     public SuccessResponse<Medication> create(@RequestBody Medication medication) {
         return SuccessResponse.of(medicationService.create(medication));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('MEDICATION_WRITE')")
     public SuccessResponse<Medication> update(@PathVariable Long id, @RequestBody Medication medication) {
         return SuccessResponse.of(medicationService.update(id, medication));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('MEDICATION_DELETE')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         medicationService.delete(id);
