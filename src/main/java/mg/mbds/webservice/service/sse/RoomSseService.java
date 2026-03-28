@@ -1,6 +1,7 @@
-package mg.mbds.webservice.service;
+package mg.mbds.webservice.service.sse;
 
 import mg.mbds.webservice.dto.RoomStatusDTO;
+import mg.mbds.webservice.service.RoomService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -25,7 +26,6 @@ public class RoomSseService {
         emitter.onTimeout(() -> emitters.remove(emitter));
         emitter.onError(e -> emitters.remove(emitter));
 
-        // Envoi immédiat de l'état courant à la connexion
         try {
             emitter.send(SseEmitter.event()
                     .name("room-status")

@@ -12,7 +12,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/prescriptions")
 public class PrescriptionController {
-
     private final PrescriptionService prescriptionService;
 
     public PrescriptionController(PrescriptionService prescriptionService) {
@@ -49,7 +48,6 @@ public class PrescriptionController {
         prescriptionService.delete(id);
     }
 
-    // PrescriptionMedication — only managed from Prescription
     @GetMapping("/{id}/medications")
     public SuccessResponse<List<PrescriptionMedication>> getMedications(@PathVariable Long id) {
         return SuccessResponse.of(prescriptionService.getMedications(id));

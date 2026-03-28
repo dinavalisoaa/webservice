@@ -10,19 +10,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 @RestController
 @RequestMapping("/patients")
 public class PatientController {
-
     private final PatientService patientService;
     private final StayService stayService;
-
     public PatientController(PatientService patientService, StayService stayService) {
         this.patientService = patientService;
         this.stayService = stayService;
     }
-
     @GetMapping
     public SuccessResponse<List<Patient>> getAll() {
         return SuccessResponse.of(patientService.getAll());
@@ -32,28 +28,23 @@ public class PatientController {
     public SuccessResponse<Patient> getById(@PathVariable Long id) {
         return SuccessResponse.of(patientService.getById(id));
     }
-
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public SuccessResponse<Patient> create(@RequestBody Patient patient) {
         return SuccessResponse.of(patientService.create(patient));
     }
-
     @PutMapping("/{id}")
     public SuccessResponse<Patient> update(@PathVariable Long id, @RequestBody Patient patient) {
         return SuccessResponse.of(patientService.update(id, patient));
     }
-
     @GetMapping("/{id}/stays")
     public SuccessResponse<List<PatientStayDTO>> getStays(@PathVariable Long id) {
         return SuccessResponse.of(stayService.getByPatientId(id));
     }
-
     @GetMapping("/{id}/medical-history")
     public SuccessResponse<PatientMedicalHistoryDTO> getMedicalHistory(@PathVariable Long id) {
         return SuccessResponse.of(patientService.getMedicalHistory(id));
     }
-
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
