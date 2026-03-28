@@ -1,4 +1,4 @@
-package mg.mbds.webservice.service;
+package mg.mbds.webservice.service.sse;
 
 import mg.mbds.webservice.dto.RoomStatusDTO;
 import org.springframework.scheduling.annotation.Scheduled;

@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/hello")
 public class HomeController {
-
     @GetMapping("/")
     public SuccessResponse<String> test() {
         return SuccessResponse. of("Hello");

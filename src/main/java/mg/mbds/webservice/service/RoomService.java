@@ -4,6 +4,7 @@ import mg.mbds.webservice.dto.RoomStatusDTO;
 import mg.mbds.webservice.exception.ResourceNotFoundException;
 import mg.mbds.webservice.model.Patient;
 import mg.mbds.webservice.enums.RoomType;
+import mg.mbds.webservice.enums.RoomStatus;
 import mg.mbds.webservice.model.Room;
 import mg.mbds.webservice.repository.RoomRepository;
 import mg.mbds.webservice.repository.RoomSpecification;
@@ -53,26 +54,25 @@ public class RoomService {
     public List<RoomStatusDTO> getAllRoomStatuses() {
         return roomRepository.findAllWithCurrentOccupancy()
                 .stream()
-                .map(row -> {
-                    Room room = (Room) row[0];
-                    int occupancy = ((Long) row[1]).intValue();
-                    int available = room.getCapacity() - occupancy;
-
-                    String status;
-                    if (Boolean.TRUE.equals(room.getUnderMaintenance())) {
-                        status = "UNDER_MAINTENANCE";
-                    } else if (available <= 0) {
-                        status = "COMPLETE";
-                    } else {
-                        status = "AVAILABLE";
-                    }
-
-                    return new RoomStatusDTO(
-                            room.getId(), room.getNumber(), room.getType(),
-                            room.getCapacity(), occupancy, Math.max(available, 0),
-                            room.getUnderMaintenance(), room.getPricePerNight(), status
-                    );
-                })
+                .map(this::toRoomStatusDTO)
                 .toList();
+    }
+
+    private RoomStatusDTO toRoomStatusDTO(Object[] row) {
+        Room room = (Room) row[0];
+        int occupancy = ((Long) row[1]).intValue();
+        int available = Math.max(room.getCapacity() - occupancy, 0);
+        String status = resolveRoomStatus(room, available);
+        return new RoomStatusDTO(
+                room.getId(), room.getNumber(), room.getType(),
+                room.getCapacity(), occupancy, available,
+                room.getUnderMaintenance(), room.getPricePerNight(), status
+        );
+    }
+
+    private String resolveRoomStatus(Room room, int available) {
+        if (Boolean.TRUE.equals(room.getUnderMaintenance())) return RoomStatus.UNDER_MAINTENANCE;
+        if (available <= 0) return RoomStatus.COMPLETE;
+        return RoomStatus.AVAILABLE;
     }
 }

@@ -12,9 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/medications")
 public class MedicationController {
-
     private final MedicationService medicationService;
-
     public MedicationController(MedicationService medicationService) {
         this.medicationService = medicationService;
     }
