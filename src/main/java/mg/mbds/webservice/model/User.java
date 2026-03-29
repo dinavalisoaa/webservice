@@ -72,7 +72,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email; // email is used as the JWT subject
+        return email;
     }
 
     @Override public boolean isAccountNonExpired()     { return true; }

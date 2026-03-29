@@ -1,5 +1,6 @@
 package mg.mbds.webservice.enums;
 
-public enum PrescriptionStatus {
+public enum
+PrescriptionStatus {
     ACTIVE, DONE, CANCELLED
 }

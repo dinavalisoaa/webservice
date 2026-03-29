@@ -24,9 +24,19 @@ public interface MedicationRepository extends JpaRepository<Medication, Long> {
     List<MedicationStockAlertDTO> findAllWithPrescriptionCount();
 
     @Modifying
+    @Query(value = """
             UPDATE medication
+            SET stock     = stock - :quantity,
+                available = CASE WHEN stock - :quantity <= 0 THEN FALSE ELSE available END
             WHERE id = :medicationId AND stock >= :quantity
             """, nativeQuery = true)
+    int decrementStock(@Param("medicationId") Long medicationId, @Param("quantity") int quantity);
+
+    @Modifying
+    @Query(value = """
+            UPDATE medication
+            SET stock     = stock + :quantity,
+                available = CASE WHEN stock + :quantity >= alert_threshold THEN TRUE ELSE available END
             WHERE id = :medicationId
             """, nativeQuery = true)
     int restock(@Param("medicationId") Long medicationId, @Param("quantity") int quantity);

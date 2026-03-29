@@ -41,4 +41,20 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             ORDER BY r.number
             """, nativeQuery = true)
     List<RoomOccupancyRow> findAllWithCurrentOccupancy();
+
+    @Query(value = """
+            SELECT r.capacity - COUNT(s.id) AS places
+            FROM room r
+            LEFT JOIN stay s ON s.room_id = r.id AND s.end_date IS NULL
+            WHERE r.id = :roomId AND r.under_maintenance = FALSE
+            GROUP BY r.id, r.capacity
+            """, nativeQuery = true)
+    Integer countAvailablePlaces(@Param("roomId") Long roomId);
+
+    @Query(value = "SELECT COUNT(*) FROM stay WHERE room_id = :roomId AND end_date IS NULL", nativeQuery = true)
+    Integer countActiveStays(@Param("roomId") Long roomId);
+
+    @Modifying
+    @Query(value = "UPDATE room SET under_maintenance = :enable WHERE id = :roomId", nativeQuery = true)
+    void setMaintenance(@Param("roomId") Long roomId, @Param("enable") Boolean enable);
 }
