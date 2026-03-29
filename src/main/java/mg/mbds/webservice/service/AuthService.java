@@ -34,9 +34,6 @@ public class AuthService {
     }
 
     private void validateRegistration(RegisterDTO dto) {
-        if (dto.getRole() == null) {
-            throw new IllegalArgumentException("Role is required");
-        }
         if (dto.getPassword() == null || !dto.getPassword().equals(dto.getConfirmPassword())) {
             throw new IllegalArgumentException("Passwords do not match");
         }
@@ -48,7 +45,6 @@ public class AuthService {
         user.setEmail(dto.getEmail());
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
-        user.setRole(dto.getRole());
         user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
         return user;
     }
