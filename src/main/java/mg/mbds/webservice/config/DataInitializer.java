@@ -124,6 +124,26 @@ public class DataInitializer {
                 pm(1, "1x per day (before meal)", AdministrationRoute.ORAL, p8, meds.get(4)),
                 pm(1, "1x per day",               AdministrationRoute.ORAL, p8, meds.get(11))
             ));
+
+            List<Stay> extraStays = stayRepo.saveAll(List.of(
+                stay(LocalDate.of(2026,3,26), null,                    "Fracture du poignet",  "Immobilisation plâtrée, antalgiques",      null, null, "dr.john", patients.get(8),  rooms.get(9), john),
+                stay(LocalDate.of(2026,3,27), null,                    "Anémie sévère",         "Transfusion en cours, bilan étiologique",  null, null, "dr.jane", patients.get(9),  rooms.get(0), jane),
+                stay(LocalDate.of(2026,3,28), null,                    "Asthme aigu",           "Bronchodilatateurs administrés, O2 posé",  null, null, "dr.john", patients.get(10), rooms.get(8), john)
+            ));
+
+            Prescription p9 = prescriptionRepo.save(prescription(
+                LocalDate.of(2026,3,26), "Antalgique toutes les 6h si douleur. Ne pas dépasser 4 prises/jour.", "5 days", PrescriptionStatus.ACTIVE, extraStays.get(0), john));
+            pmRepo.saveAll(List.of(
+                pm(2, "4x per day PRN", AdministrationRoute.ORAL,        p9, meds.get(0)),
+                pm(1, "2x per day",     AdministrationRoute.ORAL,        p9, meds.get(12))
+            ));
+
+            Prescription p10 = prescriptionRepo.save(prescription(
+                LocalDate.of(2026,3,27), "Supplément de fer à distance des repas. Surveillance hémoglobine J3.", "21 days", PrescriptionStatus.ACTIVE, extraStays.get(1), jane));
+            pmRepo.saveAll(List.of(
+                pm(1, "1x per day",     AdministrationRoute.INTRAVENOUS, p10, meds.get(14)),
+                pm(1, "2x per day",     AdministrationRoute.ORAL,        p10, meds.get(13))
+            ));
         };
     }
 
