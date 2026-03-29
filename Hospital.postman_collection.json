@@ -5,38 +5,49 @@
   },
   "auth": {
     "type": "bearer",
-    "bearer": [
-      { "key": "token", "value": "{{token}}", "type": "string" }
-    ]
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
   },
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:8080/api" },
     { "key": "token",   "value": "" }
   ],
   "item": [
+
     {
       "name": "Auth",
       "item": [
         {
           "name": "Login",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": ["const raw = JSON.stringify(res.getBody()).trim(); const token = raw.replace(/^\"|\"$/g, '').trim(); pm.collectionVariables.set('token', token); test('Token saved', function() { expect(token).to.not.be.empty; });"]
-              }
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": ["pm.collectionVariables.set('token', pm.response.json().data);"]
             }
-          ],
+          }],
           "request": {
             "auth": { "type": "noauth" },
             "method": "POST",
             "url": "{{baseUrl}}/auth/login",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"john@hospital.mg\",\n  \"password\": \"password\"\n}"
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"john@hospital.mg\",\n  \"password\": \"password\"\n}" }
+          }
+        },
+        {
+          "name": "Login (admin)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": ["pm.collectionVariables.set('token', pm.response.json().data);"]
             }
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@hospital.mg\",\n  \"password\": \"password\"\n}" }
           }
         },
         {
@@ -46,30 +57,26 @@
             "method": "POST",
             "url": "{{baseUrl}}/auth/register",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"dr.new\",\n  \"email\": \"new.doctor@hospital.mg\",\n  \"firstName\": \"New\",\n  \"lastName\": \"Doctor\",\n  \"password\": \"password\",\n  \"confirmPassword\": \"password\",\n  \"role\": \"DOCTOR\"\n}"
-            }
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"dr.marc\",\n  \"email\": \"marc@hospital.mg\",\n  \"firstName\": \"Marc\",\n  \"lastName\": \"Andriantsoa\",\n  \"password\": \"password\",\n  \"confirmPassword\": \"password\"\n}" }
           }
         }
       ]
     },
+
     {
       "name": "Users",
       "item": [
         {
           "name": "Get All Users",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/users"
-          }
+          "request": { "method": "GET", "url": "{{baseUrl}}/users" }
         },
         {
           "name": "Get User by ID",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/users/1"
-          }
+          "request": { "method": "GET", "url": "{{baseUrl}}/users/2" }
+        },
+        {
+          "name": "Doctor Workload",
+          "request": { "method": "GET", "url": "{{baseUrl}}/users/workload" }
         },
         {
           "name": "Update User",
@@ -77,74 +84,39 @@
             "method": "PUT",
             "url": "{{baseUrl}}/users/2",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"dr.john\",\n  \"email\": \"john@hospital.mg\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"DOCTOR\",\n  \"active\": true\n}"
-            }
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"dr.john\",\n  \"email\": \"john@hospital.mg\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"DOCTOR\",\n  \"active\": true\n}" }
+          }
+        },
+        {
+          "name": "Assign Role",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/users/4/role",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"role\": \"DOCTOR\"\n}" }
           }
         },
         {
           "name": "Delete User",
-          "request": {
-            "method": "DELETE",
-            "url": "{{baseUrl}}/users/5"
-          }
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/users/5" }
         }
       ]
     },
-    {
-      "name": "Rooms",
-      "item": [
-        {
-          "name": "Get Available Rooms",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/rooms/available?type=SIMPLE&minCapacity=1&minPrice=30000&maxPrice=100000&date=2026-03-25",
-              "host": ["{{baseUrl}}"],
-              "path": ["rooms", "available"],
-              "query": [
-                { "key": "type",        "value": "SIMPLE",     "description": "SIMPLE | DOUBLE | VIP | REANIMATION" },
-                { "key": "minCapacity", "value": "1" },
-                { "key": "minPrice",    "value": "30000" },
-                { "key": "maxPrice",    "value": "100000" },
-                { "key": "date",        "value": "2026-03-25", "description": "yyyy-MM-dd — defaults to today" }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get Current Patients in Room",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/rooms/3/patients"
-          }
-        },
-        {
-          "name": "Get All Room Statuses",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/rooms/status"
-          }
-        }
-      ]
-    },
+
     {
       "name": "Patients",
       "item": [
         {
           "name": "Get All Patients",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/patients"
-          }
+          "request": { "method": "GET", "url": "{{baseUrl}}/patients" }
         },
         {
           "name": "Get Patient by ID",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/patients/1"
-          }
+          "request": { "method": "GET", "url": "{{baseUrl}}/patients/1" }
+        },
+        {
+          "name": "Get Patient Stays",
+          "request": { "method": "GET", "url": "{{baseUrl}}/patients/1/stays" }
         },
         {
           "name": "Create Patient",
@@ -152,10 +124,7 @@
             "method": "POST",
             "url": "{{baseUrl}}/patients",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"lastName\": \"Rakotondrabe\",\n  \"firstName\": \"Hery\",\n  \"birthDate\": \"1995-06-15\",\n  \"socialSecurityNumber\": \"SSN006\",\n  \"phoneNumber\": \"034 00 006 06\",\n  \"address\": \"Antananarivo\",\n  \"bloodGroup\": \"B_NEGATIVE\"\n}"
-            }
+            "body": { "mode": "raw", "raw": "{\n  \"lastName\": \"Rakotondrabe\",\n  \"firstName\": \"Hery\",\n  \"birthDate\": \"1995-06-15\",\n  \"socialSecurityNumber\": \"SSN009\",\n  \"phoneNumber\": \"034 00 009 09\",\n  \"address\": \"Antananarivo, Analakely\",\n  \"bloodGroup\": \"B_NEGATIVE\"\n}" }
           }
         },
         {
@@ -164,37 +133,164 @@
             "method": "PUT",
             "url": "{{baseUrl}}/patients/1",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"lastName\": \"Rakoto\",\n  \"firstName\": \"Jean\",\n  \"birthDate\": \"1985-04-12\",\n  \"socialSecurityNumber\": \"SSN001\",\n  \"phoneNumber\": \"034 00 001 01\",\n  \"address\": \"Antananarivo, Anosy\",\n  \"bloodGroup\": \"A_POSITIVE\"\n}"
-            }
+            "body": { "mode": "raw", "raw": "{\n  \"lastName\": \"Rakoto\",\n  \"firstName\": \"Jean\",\n  \"birthDate\": \"1985-04-12\",\n  \"socialSecurityNumber\": \"SSN001\",\n  \"phoneNumber\": \"034 00 001 01\",\n  \"address\": \"Antananarivo, Anosy\",\n  \"bloodGroup\": \"A_POSITIVE\"\n}" }
           }
         },
         {
           "name": "Delete Patient",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/patients/8" }
+        }
+      ]
+    },
+
+    {
+      "name": "Rooms",
+      "item": [
+        {
+          "name": "Get Available Rooms",
           "request": {
-            "method": "DELETE",
-            "url": "{{baseUrl}}/patients/1"
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/rooms/available?type=SIMPLE&minCapacity=1&minPrice=30000&maxPrice=100000&date=2026-03-28",
+              "host": ["{{baseUrl}}"],
+              "path": ["rooms", "available"],
+              "query": [
+                { "key": "type",        "value": "SIMPLE",     "description": "SIMPLE | DOUBLE | VIP | REANIMATION" },
+                { "key": "minCapacity", "value": "1" },
+                { "key": "minPrice",    "value": "30000" },
+                { "key": "maxPrice",    "value": "100000" },
+                { "key": "date",        "value": "2026-03-28", "description": "yyyy-MM-dd" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Available Rooms (no filter)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/rooms/available" }
+        },
+        {
+          "name": "Get Patients in Room",
+          "request": { "method": "GET", "url": "{{baseUrl}}/rooms/3/patients" }
+        },
+        {
+          "name": "Get All Room Statuses",
+          "request": { "method": "GET", "url": "{{baseUrl}}/rooms/status" }
+        },
+        {
+          "name": "Set Maintenance ON",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/rooms/2/maintenance",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"enable\": true\n}" }
+          }
+        },
+        {
+          "name": "Set Maintenance OFF",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/rooms/2/maintenance",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"enable\": false\n}" }
           }
         }
       ]
     },
+
+    {
+      "name": "Stays",
+      "item": [
+        {
+          "name": "Get All Stays",
+          "request": { "method": "GET", "url": "{{baseUrl}}/stays" }
+        },
+        {
+          "name": "Get Stay by ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/stays/2" }
+        },
+        {
+          "name": "Create Stay",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/stays?patientId=8&roomId=2&doctorId=3",
+              "host": ["{{baseUrl}}"],
+              "path": ["stays"],
+              "query": [
+                { "key": "patientId", "value": "8" },
+                { "key": "roomId",    "value": "2" },
+                { "key": "doctorId",  "value": "3" }
+              ]
+            },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"startDate\": \"2026-03-28\",\n  \"diagnosis\": \"Appendicite aiguë\",\n  \"notes\": \"Douleur abdominale droite, fièvre à 38.5°C\",\n  \"createdBy\": \"dr.jane\"\n}" }
+          }
+        },
+        {
+          "name": "Update Stay",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/stays/6?doctorId=2",
+              "host": ["{{baseUrl}}"],
+              "path": ["stays", "6"],
+              "query": [
+                { "key": "roomId",   "value": "",  "disabled": true },
+                { "key": "doctorId", "value": "2", "description": "Réaffecter au Dr John" }
+              ]
+            },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"startDate\": \"2026-03-22\",\n  \"diagnosis\": \"Hypertension artérielle\",\n  \"notes\": \"Pression stabilisée, surveillance continue\",\n  \"createdBy\": \"dr.john\"\n}" }
+          }
+        },
+        {
+          "name": "Discharge Stay (RECOVERED)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/stays/2/discharge",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"outcome\": \"RECOVERED\",\n  \"causeOfDeath\": null\n}" }
+          }
+        },
+        {
+          "name": "Discharge Stay (DECEASED)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/stays/4/discharge",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"outcome\": \"DECEASED\",\n  \"causeOfDeath\": \"Arrêt cardiaque réfractaire\"\n}" }
+          }
+        },
+        {
+          "name": "Transfer Stay",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/stays/6/transfer",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"newRoomId\": 4\n}" }
+          }
+        },
+        {
+          "name": "Delete Stay",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/stays/8" }
+        }
+      ]
+    },
+
     {
       "name": "Medications",
       "item": [
         {
           "name": "Get All Medications",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/medications"
-          }
+          "request": { "method": "GET", "url": "{{baseUrl}}/medications" }
         },
         {
           "name": "Get Medication by ID",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/medications/1"
-          }
+          "request": { "method": "GET", "url": "{{baseUrl}}/medications/1" }
+        },
+        {
+          "name": "Stock Alerts",
+          "request": { "method": "GET", "url": "{{baseUrl}}/medications/stock-alerts" }
         },
         {
           "name": "Create Medication",
@@ -202,10 +298,7 @@
             "method": "POST",
             "url": "{{baseUrl}}/medications",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Aspirin\",\n  \"dosage\": \"100mg\",\n  \"manufacturer\": \"Bayer\",\n  \"stock\": 120,\n  \"alertThreshold\": 30,\n  \"price\": 750,\n  \"available\": true\n}"
-            }
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Amoxicillin\",\n  \"dosage\": \"500mg\",\n  \"manufacturer\": \"BioPharma\",\n  \"stock\": 100,\n  \"alertThreshold\": 30,\n  \"price\": 1400,\n  \"available\": true\n}" }
           }
         },
         {
@@ -214,149 +307,55 @@
             "method": "PUT",
             "url": "{{baseUrl}}/medications/1",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Paracetamol\",\n  \"dosage\": \"500mg\",\n  \"manufacturer\": \"Farmad\",\n  \"stock\": 180,\n  \"alertThreshold\": 50,\n  \"price\": 500,\n  \"available\": true\n}"
-            }
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Paracetamol\",\n  \"dosage\": \"500mg\",\n  \"manufacturer\": \"Farmad\",\n  \"stock\": 200,\n  \"alertThreshold\": 50,\n  \"price\": 500,\n  \"available\": true\n}" }
+          }
+        },
+        {
+          "name": "Restock Medication",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/medications/6/restock",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 30\n}" }
           }
         },
         {
           "name": "Delete Medication",
-          "request": {
-            "method": "DELETE",
-            "url": "{{baseUrl}}/medications/8"
-          }
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/medications/12" }
         }
       ]
     },
-    {
-      "name": "Stays",
-      "item": [
-        {
-          "name": "Get All Stays",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/stays"
-          }
-        },
-        {
-          "name": "Get Stay by ID",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/stays/1"
-          }
-        },
-        {
-          "name": "Create Stay",
-          "request": {
-            "method": "POST",
-            "url": {
-              "raw": "{{baseUrl}}/stays?patientId=3&roomId=4&doctorId=2",
-              "host": ["{{baseUrl}}"],
-              "path": ["stays"],
-              "query": [
-                { "key": "patientId", "value": "3" },
-                { "key": "roomId",    "value": "4" },
-                { "key": "doctorId",  "value": "2" }
-              ]
-            },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"startDate\": \"2026-03-25\",\n  \"diagnosis\": \"Hypertension\",\n  \"notes\": \"Patient under blood pressure monitoring\",\n  \"createdBy\": \"dr.john\"\n}"
-            }
-          }
-        },
-        {
-          "name": "Update Stay",
-          "request": {
-            "method": "PUT",
-            "url": {
-              "raw": "{{baseUrl}}/stays/2?roomId=5&doctorId=3",
-              "host": ["{{baseUrl}}"],
-              "path": ["stays", "2"],
-              "query": [
-                { "key": "roomId",   "value": "5",    "description": "Optional — reassign room" },
-                { "key": "doctorId", "value": "3",    "description": "Optional — reassign doctor" }
-              ]
-            },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"startDate\": \"2026-03-05\",\n  \"endDate\": \"2026-03-26\",\n  \"diagnosis\": \"Diabetes type 2\",\n  \"notes\": \"Discharged after stabilisation\",\n  \"stayOutcome\": \"RECOVERED\",\n  \"createdBy\": \"dr.jane\"\n}"
-            }
-          }
-        },
-        {
-          "name": "Delete Stay",
-          "request": {
-            "method": "DELETE",
-            "url": "{{baseUrl}}/stays/5"
-          }
-        }
-      ]
-    },
+
     {
       "name": "Prescriptions",
       "item": [
         {
           "name": "Get All Prescriptions",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/prescriptions"
-          }
+          "request": { "method": "GET", "url": "{{baseUrl}}/prescriptions" }
         },
         {
           "name": "Get Prescription by ID",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/prescriptions/1"
-          }
+          "request": { "method": "GET", "url": "{{baseUrl}}/prescriptions/2" }
+        },
+        {
+          "name": "Get Prescription Medications",
+          "request": { "method": "GET", "url": "{{baseUrl}}/prescriptions/2/medications" }
         },
         {
           "name": "Create Prescription",
           "request": {
             "method": "POST",
             "url": {
-              "raw": "{{baseUrl}}/prescriptions?stayId=2&doctorId=3",
+              "raw": "{{baseUrl}}/prescriptions?stayId=6&doctorId=2",
               "host": ["{{baseUrl}}"],
               "path": ["prescriptions"],
               "query": [
-                { "key": "stayId",   "value": "2" },
-                { "key": "doctorId", "value": "3" }
+                { "key": "stayId",   "value": "6" },
+                { "key": "doctorId", "value": "2" }
               ]
             },
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"prescriptionDate\": \"2026-03-25\",\n  \"instructions\": \"Take with food. Avoid alcohol.\",\n  \"duration\": \"7 days\",\n  \"status\": \"ACTIVE\"\n}"
-            }
-          }
-        },
-        {
-          "name": "Update Prescription",
-          "request": {
-            "method": "PUT",
-            "url": "{{baseUrl}}/prescriptions/1",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"prescriptionDate\": \"2026-03-25\",\n  \"instructions\": \"Take with food. Avoid alcohol.\",\n  \"duration\": \"10 days\",\n  \"status\": \"DONE\"\n}"
-            }
-          }
-        },
-        {
-          "name": "Delete Prescription",
-          "request": {
-            "method": "DELETE",
-            "url": "{{baseUrl}}/prescriptions/1"
-          }
-        },
-        {
-          "name": "Get Prescription Medications",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/prescriptions/1/medications"
+            "body": { "mode": "raw", "raw": "{\n  \"prescriptionDate\": \"2026-03-28\",\n  \"instructions\": \"Prendre le matin avec un grand verre d'eau.\",\n  \"duration\": \"30 jours\",\n  \"status\": \"ACTIVE\"\n}" }
           }
         },
         {
@@ -364,35 +363,51 @@
           "request": {
             "method": "POST",
             "url": {
-              "raw": "{{baseUrl}}/prescriptions/1/medications?medicationId=2",
+              "raw": "{{baseUrl}}/prescriptions/6/medications?medicationId=9",
               "host": ["{{baseUrl}}"],
-              "path": ["prescriptions", "1", "medications"],
-              "query": [
-                { "key": "medicationId", "value": "2" }
-              ]
+              "path": ["prescriptions", "6", "medications"],
+              "query": [{ "key": "medicationId", "value": "9" }]
             },
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"quantity\": 2,\n  \"frequency\": \"3x per day\",\n  \"administrationRoute\": \"ORAL\"\n}"
-            }
+            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 1,\n  \"frequency\": \"1x par jour\",\n  \"administrationRoute\": \"ORAL\"\n}" }
           }
         },
         {
-          "name": "Remove Medication from Prescription",
+          "name": "Update Prescription",
           "request": {
-            "method": "DELETE",
-            "url": "{{baseUrl}}/prescriptions/1/medications/1"
+            "method": "PUT",
+            "url": "{{baseUrl}}/prescriptions/7",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"prescriptionDate\": \"2026-03-24\",\n  \"instructions\": \"Terminer le traitement antibiotique même si amélioration.\",\n  \"duration\": \"10 jours\",\n  \"status\": \"ACTIVE\"\n}" }
           }
         },
         {
           "name": "Dispense Prescription",
           "request": {
             "method": "PATCH",
-            "url": "{{baseUrl}}/prescriptions/1/dispense"
+            "url": "{{baseUrl}}/prescriptions/2/dispense"
           }
+        },
+        {
+          "name": "Cancel Prescription",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/prescriptions/6/cancel"
+          }
+        },
+        {
+          "name": "Remove Medication from Prescription",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/prescriptions/7/medications/1"
+          }
+        },
+        {
+          "name": "Delete Prescription",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/prescriptions/8" }
         }
       ]
     }
+
   ]
 }
