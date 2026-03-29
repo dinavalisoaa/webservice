@@ -6,9 +6,7 @@ import mg.mbds.webservice.model.Patient;
 import mg.mbds.webservice.enums.RoomType;
 import mg.mbds.webservice.model.Room;
 import mg.mbds.webservice.repository.RoomRepository;
-import mg.mbds.webservice.repository.RoomSpecification;
 import mg.mbds.webservice.repository.StayRepository;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -28,16 +26,13 @@ public class RoomService {
     public List<Room> getAvailableRooms(RoomType type, Integer minCapacity,
                                         Double minPrice, Double maxPrice,
                                         LocalDate date) {
-        LocalDate effectiveDate = date != null ? date : LocalDate.now();
-
-        Specification<Room> spec = Specification
-                .where(RoomSpecification.isAvailableOn(effectiveDate))
-                .and(RoomSpecification.hasType(type))
-                .and(RoomSpecification.hasMinCapacity(minCapacity))
-                .and(RoomSpecification.hasPriceGreaterThanOrEqual(minPrice))
-                .and(RoomSpecification.hasPriceLessThanOrEqual(maxPrice));
-
-        return roomRepository.findAll(spec);
+        return roomRepository.findAvailableRooms(
+                date != null ? date : LocalDate.now(),
+                type != null ? type.name() : null,
+                minCapacity,
+                minPrice,
+                maxPrice
+        );
     }
 
     public List<Patient> getCurrentPatientsInRoom(Long roomId) {
