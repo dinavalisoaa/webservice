@@ -15,6 +15,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,6 +43,7 @@ public class RoomController {
 
     @Operation(summary = "Lister les chambres disponibles",
                description = "Retourne les chambres non en maintenance dont la capacité n'est pas atteinte à la date donnée (par défaut aujourd'hui)")
+    @PreAuthorize("hasAuthority('ROOM_READ')")
     @GetMapping("/available")
     public ResponseEntity<CollectionModel<EntityModel<Room>>> getAvailableRooms(
             @Parameter(description = "Type de chambre") @RequestParam(required = false) RoomType type,
@@ -71,6 +73,7 @@ public class RoomController {
 
     @Operation(summary = "Lister les patients actuellement présents dans une chambre",
                description = "Retourne les patients dont le séjour dans la chambre n'a pas encore de date de fin (endDate est null)")
+    @PreAuthorize("hasAuthority('ROOM_READ')")
     @GetMapping("/{id}/patients")
     public ResponseEntity<CollectionModel<EntityModel<Patient>>> getCurrentPatients(
             @Parameter(description = "Identifiant de la chambre") @PathVariable Long id
@@ -93,6 +96,7 @@ public class RoomController {
 
     @Operation(summary = "État en temps réel de toutes les chambres",
                description = "Retourne l'état courant de toutes les chambres, y compris les chambres vides")
+    @PreAuthorize("hasAuthority('ROOM_READ')")
     @GetMapping("/status")
     public ResponseEntity<CollectionModel<EntityModel<RoomStatusDTO>>> getRoomStatuses() {
         List<EntityModel<RoomStatusDTO>> statuses = roomService.getAllRoomStatuses()
@@ -108,6 +112,7 @@ public class RoomController {
         return ResponseEntity.ok(CollectionModel.of(statuses, selfLink, streamLink));
     }
 
+    @PreAuthorize("hasAuthority('ROOM_READ')")
     @GetMapping(value = "/status/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamRoomStatuses() {
         return roomSseService.subscribe();

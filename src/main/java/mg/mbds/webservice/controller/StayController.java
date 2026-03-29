@@ -4,6 +4,7 @@ import mg.mbds.webservice.model.Stay;
 import mg.mbds.webservice.responses.SuccessResponse;
 import mg.mbds.webservice.service.StayService;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,16 +20,19 @@ public class StayController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('STAY_READ')")
     public SuccessResponse<List<Stay>> getAll() {
         return SuccessResponse.of(stayService.getAll());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('STAY_READ')")
     public SuccessResponse<Stay> getById(@PathVariable Long id) {
         return SuccessResponse.of(stayService.getById(id));
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('STAY_WRITE')")
     @ResponseStatus(HttpStatus.CREATED)
     public SuccessResponse<Stay> create(
             @RequestBody Stay stay,
@@ -39,6 +43,7 @@ public class StayController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('STAY_WRITE')")
     public SuccessResponse<Stay> update(
             @PathVariable Long id,
             @RequestBody Stay stay,
@@ -48,6 +53,7 @@ public class StayController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('STAY_DELETE')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         stayService.delete(id);
