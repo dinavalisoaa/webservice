@@ -1,5 +1,7 @@
 package mg.mbds.webservice.config;
 
+import mg.mbds.webservice.enums.AdministrationRoute;
+import mg.mbds.webservice.enums.PrescriptionStatus;
 import mg.mbds.webservice.enums.Role;
 import mg.mbds.webservice.enums.StayOutcome;
 import mg.mbds.webservice.model.*;
@@ -22,12 +24,15 @@ public class DataInitializer {
 
     @Bean
     CommandLineRunner seedData(
-            UserRepository    userRepo,
-            PatientRepository patientRepo,
-            RoomRepository    roomRepo,
-            StayRepository    stayRepo,
-            PasswordEncoder   passwordEncoder,
-            DataSource        dataSource
+            UserRepository                  userRepo,
+            PatientRepository               patientRepo,
+            RoomRepository                  roomRepo,
+            StayRepository                  stayRepo,
+            MedicationRepository            medicationRepo,
+            PrescriptionRepository          prescriptionRepo,
+            PrescriptionMedicationRepository pmRepo,
+            PasswordEncoder                 passwordEncoder,
+            DataSource                      dataSource
     ) {
         return args -> {
             if (userRepo.count() > 0) return;
@@ -50,15 +55,90 @@ public class DataInitializer {
             User jane = users.get(2);
 
             // ── 3. Stays (depend on saved users + patients + rooms) ──────
-            List<Patient> patients = patientRepo.findAll();
-            List<Room>    rooms    = roomRepo.findAll();
+            List<Patient>    patients = patientRepo.findAll();
+            List<Room>       rooms    = roomRepo.findAll();
+            List<Medication> meds     = medicationRepo.findAll();
 
-            stayRepo.saveAll(List.of(
-                stay(LocalDate.of(2026,3, 1), LocalDate.of(2026,3,10), "Pneumonia",        "Patient responded well to antibiotics", StayOutcome.RECOVERED, null,           "dr.john", patients.get(0), rooms.get(0), john),
-                stay(LocalDate.of(2026,3, 5), null,                    "Diabetes type 2",  "Monitoring blood sugar levels",         null,                  null,           "dr.jane", patients.get(1), rooms.get(2), jane),
-                stay(LocalDate.of(2026,3,10), LocalDate.of(2026,3,15), "Appendicitis",     "Post-surgery recovery",                 StayOutcome.RECOVERED, null,           "dr.john", patients.get(2), rooms.get(1), john),
-                stay(LocalDate.of(2026,3,18), null,                    "Cardiac arrest",   "Under close monitoring in reanimation", null,                  null,           "dr.jane", patients.get(3), rooms.get(6), jane),
-                stay(LocalDate.of(2026,3,20), LocalDate.of(2026,3,22), "Severe infection", "Sepsis, did not respond to treatment",  StayOutcome.DECEASED,  "Septic shock", "dr.john", patients.get(4), rooms.get(7), john)
+            // meds index: 0=Paracetamol 1=Amoxicillin 2=Ibuprofen 3=Metformin
+            //             4=Omeprazole  5=Morphine    6=Insulin   7=Ciprofloxacin
+            //             8=Atenolol    9=Furosemide 10=Dexamethasone 11=Diazepam
+
+            List<Stay> stays = stayRepo.saveAll(List.of(
+                stay(LocalDate.of(2026,3, 1), LocalDate.of(2026,3,10), "Pneumonia",           "Patient responded well to antibiotics",  StayOutcome.RECOVERED, null,           "dr.john", patients.get(0), rooms.get(0), john),
+                stay(LocalDate.of(2026,3, 5), null,                    "Diabetes type 2",     "Monitoring blood sugar levels",          null,                  null,           "dr.jane", patients.get(1), rooms.get(2), jane),
+                stay(LocalDate.of(2026,3,10), LocalDate.of(2026,3,15), "Appendicitis",        "Post-surgery recovery",                  StayOutcome.RECOVERED, null,           "dr.john", patients.get(2), rooms.get(1), john),
+                stay(LocalDate.of(2026,3,18), null,                    "Cardiac arrest",      "Under close monitoring in reanimation",  null,                  null,           "dr.jane", patients.get(3), rooms.get(6), jane),
+                stay(LocalDate.of(2026,3,20), LocalDate.of(2026,3,22), "Severe infection",    "Sepsis, did not respond to treatment",   StayOutcome.DECEASED,  "Septic shock", "dr.john", patients.get(4), rooms.get(7), john),
+                stay(LocalDate.of(2026,3,22), null,                    "Hypertension crisis", "Blood pressure stabilised, monitoring",  null,                  null,           "dr.john", patients.get(5), rooms.get(3), john),
+                stay(LocalDate.of(2026,3,24), null,                    "Acute bronchitis",    "Fever under control, antibiotics started",null,                 null,           "dr.jane", patients.get(6), rooms.get(4), jane),
+                stay(LocalDate.of(2026,3,25), LocalDate.of(2026,3,27), "Gastric ulcer",       "Discharged after endoscopy",             StayOutcome.RECOVERED, null,           "dr.john", patients.get(7), rooms.get(1), john)
+            ));
+
+            // ── 4. Prescriptions & medications ───────────────────────────
+            // Stay 1 — Pneumonia (RECOVERED) → prescription DONE
+            Prescription p1 = prescriptionRepo.save(prescription(
+                LocalDate.of(2026,3,1), "Take with food. Complete the full course.", "7 days", PrescriptionStatus.DONE, stays.get(0), john));
+            pmRepo.saveAll(List.of(
+                pm(2, "3x per day", AdministrationRoute.ORAL,          p1, meds.get(1)),   // Amoxicillin
+                pm(2, "3x per day", AdministrationRoute.ORAL,          p1, meds.get(0))    // Paracetamol
+            ));
+
+            // Stay 2 — Diabetes (ongoing) → prescription ACTIVE — testable via /dispense
+            Prescription p2 = prescriptionRepo.save(prescription(
+                LocalDate.of(2026,3,5), "Take Metformin with meals. Insulin before breakfast.", "30 days", PrescriptionStatus.ACTIVE, stays.get(1), jane));
+            pmRepo.saveAll(List.of(
+                pm(1, "2x per day",  AdministrationRoute.ORAL,         p2, meds.get(3)),   // Metformin
+                pm(1, "1x per day",  AdministrationRoute.SUBCUTANEOUS, p2, meds.get(6))    // Insulin
+            ));
+
+            // Stay 3 — Appendicitis (RECOVERED) → prescription DONE
+            Prescription p3 = prescriptionRepo.save(prescription(
+                LocalDate.of(2026,3,10), "Post-op pain management. Do not exceed dose.", "5 days", PrescriptionStatus.DONE, stays.get(2), john));
+            pmRepo.saveAll(List.of(
+                pm(1, "PRN (max 4h)", AdministrationRoute.INTRAVENOUS, p3, meds.get(5)),   // Morphine
+                pm(1, "1x per day",   AdministrationRoute.ORAL,        p3, meds.get(4))    // Omeprazole
+            ));
+
+            // Stay 4 — Cardiac arrest (ongoing) → prescription ACTIVE — testable via /dispense
+            Prescription p4 = prescriptionRepo.save(prescription(
+                LocalDate.of(2026,3,18), "Continuous monitoring required. Adjust dose per vitals.", "14 days", PrescriptionStatus.ACTIVE, stays.get(3), jane));
+            pmRepo.saveAll(List.of(
+                pm(1, "Continuous infusion", AdministrationRoute.INTRAVENOUS, p4, meds.get(5)),  // Morphine
+                pm(1, "1x per day",          AdministrationRoute.ORAL,        p4, meds.get(8)),  // Atenolol
+                pm(1, "1x per day",          AdministrationRoute.INTRAVENOUS, p4, meds.get(10))  // Dexamethasone
+            ));
+
+            // Stay 5 — Severe infection (DECEASED) → prescription CANCELLED
+            Prescription p5 = prescriptionRepo.save(prescription(
+                LocalDate.of(2026,3,20), "IV broad-spectrum antibiotics. Reassess in 48h.", "10 days", PrescriptionStatus.CANCELLED, stays.get(4), john));
+            pmRepo.saveAll(List.of(
+                pm(1, "2x per day", AdministrationRoute.INTRAVENOUS, p5, meds.get(7)),  // Ciprofloxacin
+                pm(1, "1x per day", AdministrationRoute.INTRAVENOUS, p5, meds.get(10))  // Dexamethasone
+            ));
+
+            // Stay 6 — Hypertension crisis (ongoing) → prescription ACTIVE
+            Prescription p6 = prescriptionRepo.save(prescription(
+                LocalDate.of(2026,3,22), "Monitor BP twice daily. Reduce sodium intake.", "30 days", PrescriptionStatus.ACTIVE, stays.get(5), john));
+            pmRepo.saveAll(List.of(
+                pm(1, "1x per day", AdministrationRoute.ORAL, p6, meds.get(8)),   // Atenolol
+                pm(1, "1x per day", AdministrationRoute.ORAL, p6, meds.get(9))    // Furosemide
+            ));
+
+            // Stay 7 — Acute bronchitis (ongoing) → prescription ACTIVE
+            Prescription p7 = prescriptionRepo.save(prescription(
+                LocalDate.of(2026,3,24), "Complete the antibiotic course even if symptoms improve.", "7 days", PrescriptionStatus.ACTIVE, stays.get(6), jane));
+            pmRepo.saveAll(List.of(
+                pm(2, "3x per day", AdministrationRoute.ORAL,         p7, meds.get(1)),   // Amoxicillin
+                pm(2, "3x per day", AdministrationRoute.ORAL,         p7, meds.get(0)),   // Paracetamol
+                pm(1, "2x per day", AdministrationRoute.INTRAVENOUS,  p7, meds.get(10))   // Dexamethasone
+            ));
+
+            // Stay 8 — Gastric ulcer (RECOVERED) → prescription DONE
+            Prescription p8 = prescriptionRepo.save(prescription(
+                LocalDate.of(2026,3,25), "Avoid NSAIDs. Follow gastric diet.", "14 days", PrescriptionStatus.DONE, stays.get(7), john));
+            pmRepo.saveAll(List.of(
+                pm(1, "1x per day (before meal)", AdministrationRoute.ORAL, p8, meds.get(4)),  // Omeprazole
+                pm(1, "1x per day",               AdministrationRoute.ORAL, p8, meds.get(11))  // Diazepam
             ));
         };
     }
@@ -84,5 +164,29 @@ public class DataInitializer {
         s.setCreatedBy(createdBy); s.setCreatedAt(LocalDateTime.now());
         s.setPatient(patient); s.setRoom(room); s.setDoctor(doctor);
         return s;
+    }
+
+    private Prescription prescription(LocalDate date, String instructions, String duration,
+                                      PrescriptionStatus status, Stay stay, User doctor) {
+        Prescription p = new Prescription();
+        p.setPrescriptionDate(date);
+        p.setInstructions(instructions);
+        p.setDuration(duration);
+        p.setStatus(status);
+        p.setStay(stay);
+        p.setDoctor(doctor);
+        return p;
+    }
+
+    private PrescriptionMedication pm(int quantity, String frequency,
+                                      AdministrationRoute route,
+                                      Prescription prescription, Medication medication) {
+        PrescriptionMedication pm = new PrescriptionMedication();
+        pm.setQuantity(quantity);
+        pm.setFrequency(frequency);
+        pm.setAdministrationRoute(route);
+        pm.setPrescription(prescription);
+        pm.setMedication(medication);
+        return pm;
     }
 }
