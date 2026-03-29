@@ -12,6 +12,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(404).body(e.getMessage());
     }
 
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<String> handleInsufficientStock(InsufficientStockException e) {
+        return ResponseEntity.status(409).body(e.getMessage());
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<String> handleIllegalState(IllegalStateException e) {
+        return ResponseEntity.status(409).body(e.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleError(Exception e) {
         return ResponseEntity.status(500).body(e.getMessage());
