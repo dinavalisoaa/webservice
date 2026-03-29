@@ -1,5 +1,6 @@
 package mg.mbds.webservice.repository;
 
+import mg.mbds.webservice.dto.RoomOccupancyRow;
 import mg.mbds.webservice.model.Room;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -31,10 +32,13 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                                   @Param("minPrice") Double minPrice,
                                   @Param("maxPrice") Double maxPrice);
 
-    @Query("""
-            SELECT r, (SELECT COUNT(s) FROM Stay s WHERE s.room = r AND s.endDate IS NULL)
-            FROM Room r
+    @Query(value = """
+            SELECT r.id, r.number, r.type, r.capacity,
+                   r.under_maintenance AS underMaintenance,
+                   r.price_per_nigth   AS pricePerNight,
+                   (SELECT COUNT(*) FROM stay s WHERE s.room_id = r.id AND s.end_date IS NULL) AS currentOccupancy
+            FROM room r
             ORDER BY r.number
-            """)
-    List<Object[]> findAllWithCurrentOccupancy();
+            """, nativeQuery = true)
+    List<RoomOccupancyRow> findAllWithCurrentOccupancy();
 }
