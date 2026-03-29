@@ -43,22 +43,26 @@ public class PrescriptionController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('PRESCRIPTION_WRITE')")
     public SuccessResponse<Prescription> update(@PathVariable Long id, @RequestBody Prescription prescription) {
         return SuccessResponse.of(prescriptionService.update(id, prescription));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('PRESCRIPTION_DELETE')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         prescriptionService.delete(id);
     }
 
     @GetMapping("/{id}/medications")
+    @PreAuthorize("hasAuthority('PRESCRIPTION_READ')")
     public SuccessResponse<List<PrescriptionMedication>> getMedications(@PathVariable Long id) {
         return SuccessResponse.of(prescriptionService.getMedications(id));
     }
 
     @PostMapping("/{id}/medications")
+    @PreAuthorize("hasAuthority('PRESCRIPTION_WRITE')")
     @ResponseStatus(HttpStatus.CREATED)
     public SuccessResponse<PrescriptionMedication> addMedication(
             @PathVariable Long id,
@@ -68,8 +72,15 @@ public class PrescriptionController {
     }
 
     @DeleteMapping("/{id}/medications/{pmId}")
+    @PreAuthorize("hasAuthority('PRESCRIPTION_WRITE')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeMedication(@PathVariable Long id, @PathVariable Long pmId) {
         prescriptionService.removeMedication(id, pmId);
+    }
+
+    @PatchMapping("/{id}/dispense")
+    @PreAuthorize("hasAuthority('PRESCRIPTION_WRITE')")
+    public SuccessResponse<Prescription> dispense(@PathVariable Long id) {
+        return SuccessResponse.of(prescriptionService.dispense(id));
     }
 }
