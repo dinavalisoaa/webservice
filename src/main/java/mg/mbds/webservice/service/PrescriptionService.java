@@ -2,6 +2,7 @@ package mg.mbds.webservice.service;
 
 import mg.mbds.webservice.enums.PrescriptionStatus;
 import mg.mbds.webservice.exception.InsufficientStockException;
+import mg.mbds.webservice.exception.ResourceNotFoundException;
 import mg.mbds.webservice.model.Medication;
 import mg.mbds.webservice.model.Prescription;
 import mg.mbds.webservice.model.PrescriptionMedication;
@@ -91,6 +92,17 @@ public class PrescriptionService {
             throw new RuntimeException("PrescriptionMedication does not belong to prescription: " + prescriptionId);
         }
         prescriptionMedicationRepository.deleteById(pmId);
+    }
+
+    @Transactional
+    public void cancel(Long prescriptionId) {
+        int updated = prescriptionRepository.cancel(prescriptionId);
+        if (updated == 0)
+            throw new IllegalStateException("Prescription introuvable ou déjà clôturée : " + prescriptionId);
+        List<PrescriptionMedication> lines = prescriptionMedicationRepository.findByPrescriptionId(prescriptionId);
+        for (PrescriptionMedication line : lines) {
+            medicationRepository.restoreStock(line.getMedication().getId(), line.getQuantity());
+        }
     }
 
     @Transactional
