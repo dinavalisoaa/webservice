@@ -5,6 +5,7 @@ import mg.mbds.webservice.model.PrescriptionMedication;
 import mg.mbds.webservice.responses.SuccessResponse;
 import mg.mbds.webservice.service.PrescriptionService;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,16 +21,19 @@ public class PrescriptionController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('PRESCRIPTION_READ')")
     public SuccessResponse<List<Prescription>> getAll() {
         return SuccessResponse.of(prescriptionService.getAll());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('PRESCRIPTION_READ')")
     public SuccessResponse<Prescription> getById(@PathVariable Long id) {
         return SuccessResponse.of(prescriptionService.getById(id));
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('PRESCRIPTION_WRITE')")
     @ResponseStatus(HttpStatus.CREATED)
     public SuccessResponse<Prescription> create(
             @RequestBody Prescription prescription,
@@ -49,7 +53,6 @@ public class PrescriptionController {
         prescriptionService.delete(id);
     }
 
-    // PrescriptionMedication — only managed from Prescription
     @GetMapping("/{id}/medications")
     public SuccessResponse<List<PrescriptionMedication>> getMedications(@PathVariable Long id) {
         return SuccessResponse.of(prescriptionService.getMedications(id));
