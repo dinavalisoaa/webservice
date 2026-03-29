@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import mg.mbds.webservice.enums.Role;
 
 @Getter @Setter
 @NoArgsConstructor
@@ -16,5 +15,4 @@ public class RegisterDTO {
     private String lastName;
     private String password;
     private String confirmPassword;
-    private Role role;
 }

@@ -1,0 +1,622 @@
+{
+  "info": {
+    "name": "Hospital Webservice",
+    "description": "Webservice de gestion hospitalière — JWT, HATEOAS, H2\n\n**Login** → le token est automatiquement stocké dans la variable `token`.\n\nBase URL : `http://localhost:8080/api`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080/api" },
+    { "key": "token",   "value": "" }
+  ],
+  "item": [
+
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login — DOCTOR (dr.john)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": ["pm.collectionVariables.set('token', pm.response.json().data);"]
+            }
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@hospital.mg\",\n  \"password\": \"password\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login — ADMIN",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": ["pm.collectionVariables.set('token', pm.response.json().data);"]
+            }
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@hospital.mg\",\n  \"password\": \"password\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login — DOCTOR (dr.jane)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": ["pm.collectionVariables.set('token', pm.response.json().data);"]
+            }
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane@hospital.mg\",\n  \"password\": \"password\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login — NURSE (nurse01)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": ["pm.collectionVariables.set('token', pm.response.json().data);"]
+            }
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nurse01@hospital.mg\",\n  \"password\": \"password\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register (nouveau compte)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"dr.marc\",\n  \"email\": \"marc@hospital.mg\",\n  \"firstName\": \"Marc\",\n  \"lastName\": \"Andriantsoa\",\n  \"password\": \"password\",\n  \"confirmPassword\": \"password\"\n}"
+            }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Users",
+      "description": "Requiert ADMIN pour écriture/suppression. Lecture accessible à ADMIN uniquement.",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/users"
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/users/2"
+          }
+        },
+        {
+          "name": "Doctor Workload (agrégation)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/users/workload",
+            "description": "Retourne la charge de travail de chaque médecin actif : patients actifs, total, niveau (SURCHARGE/NORMAL/SOUS_CHARGE)"
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/users/2",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"dr.john\",\n  \"email\": \"john@hospital.mg\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"DOCTOR\",\n  \"active\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Assign Role (ADMIN only)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/users/4/role",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"DOCTOR\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Valeurs possibles pour role : ADMIN | DOCTOR | NURSE"
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/users/5"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Patients",
+      "description": "CRUD patients. DELETE requiert PATIENT_DELETE (ADMIN).",
+      "item": [
+        {
+          "name": "Get All Patients",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/patients"
+          }
+        },
+        {
+          "name": "Get Patient by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/patients/1"
+          }
+        },
+        {
+          "name": "Get Patient Stays",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/patients/1/stays",
+            "description": "Historique de tous les séjours du patient"
+          }
+        },
+        {
+          "name": "Create Patient",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/patients",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lastName\": \"Rakotondrabe\",\n  \"firstName\": \"Hery\",\n  \"birthDate\": \"1997-03-15\",\n  \"socialSecurityNumber\": \"SSN013\",\n  \"phoneNumber\": \"034 00 013 13\",\n  \"address\": \"Antananarivo, Analakely\",\n  \"bloodGroup\": \"B_NEGATIVE\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "bloodGroup : A_POSITIVE | A_NEGATIVE | B_POSITIVE | B_NEGATIVE | AB_POSITIVE | AB_NEGATIVE | O_POSITIVE | O_NEGATIVE"
+          }
+        },
+        {
+          "name": "Update Patient",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/patients/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lastName\": \"Rakoto\",\n  \"firstName\": \"Jean\",\n  \"birthDate\": \"1985-04-12\",\n  \"socialSecurityNumber\": \"SSN001\",\n  \"phoneNumber\": \"034 00 001 01\",\n  \"address\": \"Antananarivo, Anosy\",\n  \"bloodGroup\": \"A_POSITIVE\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Patient",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/patients/12"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Rooms",
+      "description": "Lecture accessible à DOCTOR et NURSE. Écriture (maintenance) requiert ADMIN.",
+      "item": [
+        {
+          "name": "Get Available Rooms (avec filtres)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/rooms/available?type=SIMPLE&minCapacity=1&minPrice=40000&maxPrice=100000&date=2026-03-29",
+              "host": ["{{baseUrl}}"],
+              "path": ["rooms", "available"],
+              "query": [
+                { "key": "type",        "value": "SIMPLE",     "description": "SIMPLE | DOUBLE | VIP | REANIMATION" },
+                { "key": "minCapacity", "value": "1",          "description": "Capacité minimale" },
+                { "key": "minPrice",    "value": "40000",      "description": "Prix min/nuit (Ar)" },
+                { "key": "maxPrice",    "value": "100000",     "description": "Prix max/nuit (Ar)" },
+                { "key": "date",        "value": "2026-03-29", "description": "Date de disponibilité (yyyy-MM-dd)" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Available Rooms (sans filtre)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/rooms/available"
+          }
+        },
+        {
+          "name": "Get All Room Statuses (agrégation)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/rooms/status",
+            "description": "Retourne l'occupation, la capacité et le statut (AVAILABLE/COMPLETE/UNDER_MAINTENANCE) de chaque chambre"
+          }
+        },
+        {
+          "name": "Get Patients in Room",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/rooms/3/patients",
+            "description": "Patients dont le séjour dans la chambre est en cours (endDate IS NULL)"
+          }
+        },
+        {
+          "name": "Set Maintenance ON",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/rooms/2/maintenance",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enable\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Set Maintenance OFF",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/rooms/6/maintenance",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enable\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Chambre 302 (room 6) est en maintenance dans le seed — pour la remettre en service"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Stays",
+      "description": "Séjours hospitaliers. PATCH discharge/transfer nécessitent que le séjour soit encore ouvert (endDate null).",
+      "item": [
+        {
+          "name": "Get All Stays",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/stays"
+          }
+        },
+        {
+          "name": "Get Stay by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/stays/2"
+          }
+        },
+        {
+          "name": "Create Stay",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/stays?patientId=12&roomId=4&doctorId=3",
+              "host": ["{{baseUrl}}"],
+              "path": ["stays"],
+              "query": [
+                { "key": "patientId", "value": "12", "description": "ID du patient (Rabemanantsoa Rado)" },
+                { "key": "roomId",    "value": "4",  "description": "ID de la chambre (202 - DOUBLE)" },
+                { "key": "doctorId",  "value": "3",  "description": "ID du médecin (dr.jane)" }
+              ]
+            },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"startDate\": \"2026-03-29\",\n  \"diagnosis\": \"Insuffisance rénale chronique\",\n  \"notes\": \"Dialyse bi-hebdomadaire, surveillance créatinine\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Stay",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/stays/6?doctorId=2",
+              "host": ["{{baseUrl}}"],
+              "path": ["stays", "6"],
+              "query": [
+                { "key": "roomId",   "value": "",  "disabled": true, "description": "Optionnel — changer de chambre" },
+                { "key": "doctorId", "value": "2", "description": "Optionnel — réaffecter à dr.john" }
+              ]
+            },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"startDate\": \"2026-03-22\",\n  \"diagnosis\": \"Hypertension artérielle\",\n  \"notes\": \"Pression stabilisée, mise sous traitement oral\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Discharge Stay — RECOVERED (séjour 2)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/stays/2/discharge",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"outcome\": \"RECOVERED\",\n  \"causeOfDeath\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "outcome : RECOVERED | TRANSFERRED | DECEASED"
+          }
+        },
+        {
+          "name": "Discharge Stay — DECEASED (séjour 4)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/stays/4/discharge",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"outcome\": \"DECEASED\",\n  \"causeOfDeath\": \"Arrêt cardiaque réfractaire au traitement\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Transfer Stay (séjour 6 → chambre 4)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/stays/6/transfer",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newRoomId\": 4\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Déplace le séjour vers la chambre 202 (DOUBLE, libre)"
+          }
+        },
+        {
+          "name": "Delete Stay",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/stays/11"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Medications",
+      "description": "Catalogue médicaments + gestion de stock. Écriture/suppression : ADMIN uniquement.",
+      "item": [
+        {
+          "name": "Get All Medications",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/medications"
+          }
+        },
+        {
+          "name": "Get Medication by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/medications/6"
+          }
+        },
+        {
+          "name": "Stock Alerts (agrégation)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/medications/stock-alerts",
+            "description": "Médicaments dont le stock est inférieur ou égal à alert_threshold (Ciprofloxacin, Hydrocortisone dans le seed)"
+          }
+        },
+        {
+          "name": "Create Medication",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/medications",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tramadol\",\n  \"dosage\": \"50mg\",\n  \"manufacturer\": \"PharmaPlus\",\n  \"stock\": 80,\n  \"alertThreshold\": 20,\n  \"price\": 1600,\n  \"available\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Medication",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/medications/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Paracetamol\",\n  \"dosage\": \"500mg\",\n  \"manufacturer\": \"Farmad\",\n  \"stock\": 250,\n  \"alertThreshold\": 50,\n  \"price\": 500,\n  \"available\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Restock Medication (Morphine stock bas)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/medications/6/restock",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 30\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Morphine (ID 6) — stock actuel 20, seuil alerte 10"
+          }
+        },
+        {
+          "name": "Restock Medication (Ciprofloxacin épuisé)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/medications/8/restock",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 50\n}"
+            },
+            "description": "Ciprofloxacin (ID 8) — stock actuel 5, available=false → restock le rétablit"
+          }
+        },
+        {
+          "name": "Delete Medication",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/medications/15"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Prescriptions",
+      "description": "Prescriptions liées aux séjours. dispense/cancel uniquement si status=ACTIVE.",
+      "item": [
+        {
+          "name": "Get All Prescriptions",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/prescriptions"
+          }
+        },
+        {
+          "name": "Get Prescription by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/prescriptions/2"
+          }
+        },
+        {
+          "name": "Get Prescription Medications",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/prescriptions/4/medications",
+            "description": "Prescription 4 (séjour 4, cardiac arrest) — contient Morphine, Atenolol, Dexamethasone"
+          }
+        },
+        {
+          "name": "Create Prescription",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/prescriptions?stayId=9&doctorId=2",
+              "host": ["{{baseUrl}}"],
+              "path": ["prescriptions"],
+              "query": [
+                { "key": "stayId",   "value": "9", "description": "Séjour 9 (Rajoelison — fracture poignet)" },
+                { "key": "doctorId", "value": "2", "description": "dr.john (ID 2)" }
+              ]
+            },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prescriptionDate\": \"2026-03-29\",\n  \"instructions\": \"Prendre le soir avec un verre d'eau. Éviter l'alcool.\",\n  \"duration\": \"7 jours\",\n  \"status\": \"ACTIVE\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Add Medication to Prescription",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/prescriptions/6/medications?medicationId=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["prescriptions", "6", "medications"],
+              "query": [{ "key": "medicationId", "value": "10", "description": "Furosemide (ID 10)" }]
+            },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 1,\n  \"frequency\": \"1x par jour\",\n  \"administrationRoute\": \"ORAL\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Ajoute Furosemide à la prescription 6 (hypertension, séjour actif)\nadministrationRoute : ORAL | INTRAVENOUS | SUBCUTANEOUS | INTRAMUSCULAR | TOPICAL | INHALATION"
+          }
+        },
+        {
+          "name": "Update Prescription",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/prescriptions/7",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prescriptionDate\": \"2026-03-24\",\n  \"instructions\": \"Terminer le traitement antibiotique même si amélioration des symptômes.\",\n  \"duration\": \"10 jours\",\n  \"status\": \"ACTIVE\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Dispense Prescription (prescription 2 — ACTIVE)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/prescriptions/2/dispense",
+            "description": "Décrémente le stock de chaque médicament atomiquement. Échoue si stock insuffisant (409)."
+          }
+        },
+        {
+          "name": "Cancel Prescription (prescription 6 — ACTIVE)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/prescriptions/6/cancel",
+            "description": "Annule la prescription et restaure le stock des médicaments déjà délivrés."
+          }
+        },
+        {
+          "name": "Remove Medication from Prescription",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/prescriptions/7/medications/14",
+            "description": "Retire Amoxicillin (PM ID 14) de la prescription 7. Les PM IDs sont auto-incrémentés — vérifier via GET /prescriptions/7/medications."
+          }
+        },
+        {
+          "name": "Delete Prescription",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/prescriptions/10"
+          }
+        }
+      ]
+    }
+
+  ]
+}

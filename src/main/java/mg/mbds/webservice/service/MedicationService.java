@@ -3,9 +3,13 @@ package mg.mbds.webservice.service;
 import mg.mbds.webservice.dto.MedicationStockAlertDTO;
 import mg.mbds.webservice.enums.StockAlertLevel;
 import mg.mbds.webservice.exception.ResourceNotFoundException;
+import mg.mbds.webservice.dto.RestockRequest;
+import mg.mbds.webservice.enums.StockAlertLevel;
+import mg.mbds.webservice.exception.ResourceNotFoundException;
 import mg.mbds.webservice.model.Medication;
 import mg.mbds.webservice.repository.MedicationRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -46,6 +50,14 @@ public class MedicationService {
 
     public void delete(Long id) {
         medicationRepository.deleteById(id);
+    }
+
+    @Transactional
+    public Medication restock(Long id, RestockRequest req) {
+        if (!medicationRepository.existsById(id))
+            throw new ResourceNotFoundException("Médicament introuvable : " + id);
+        medicationRepository.restock(id, req.getQuantity());
+        return medicationRepository.findById(id).orElseThrow();
     }
 
     public List<MedicationStockAlertDTO> getStockAlerts() {

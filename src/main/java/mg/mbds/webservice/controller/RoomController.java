@@ -9,8 +9,16 @@ import mg.mbds.webservice.model.Patient;
 import mg.mbds.webservice.model.Room;
 import mg.mbds.webservice.responses.SuccessResponse;
 import mg.mbds.webservice.service.RoomService;
-import mg.mbds.webservice.service.sse.RoomSseService;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,20 +30,22 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 @RequestMapping("/rooms")
 public class RoomController {
 
     private final RoomService roomService;
-    private final RoomSseService roomSseService;
 
-    public RoomController(RoomService roomService, RoomSseService roomSseService) {
+    public RoomController(RoomService roomService) {
         this.roomService = roomService;
-        this.roomSseService = roomSseService;
     }
 
     @Operation(summary = "Lister les chambres disponibles",
                description = "Retourne les chambres non en maintenance dont la capacité n'est pas atteinte à la date donnée (par défaut aujourd'hui)")
+    @PreAuthorize("hasAuthority('ROOM_READ')")
     @GetMapping("/available")
     public SuccessResponse<List<Room>> getAvailableRooms(
             @Parameter(description = "Type de chambre") @RequestParam(required = false) RoomType type,
@@ -51,6 +61,7 @@ public class RoomController {
 
     @Operation(summary = "Lister les patients actuellement présents dans une chambre",
                description = "Retourne les patients dont le séjour dans la chambre n'a pas encore de date de fin (endDate est null)")
+    @PreAuthorize("hasAuthority('ROOM_READ')")
     @GetMapping("/{id}/patients")
     public SuccessResponse<List<Patient>> getCurrentPatients(
             @Parameter(description = "Identifiant de la chambre") @PathVariable Long id
@@ -58,15 +69,26 @@ public class RoomController {
         return SuccessResponse.of(roomService.getCurrentPatientsInRoom(id));
     }
 
-    @Operation(summary = "État en temps réel de toutes les chambres",
-               description = "Retourne l'état courant de toutes les chambres, y compris les chambres vides")
-    @GetMapping("/status")
-    public SuccessResponse<List<RoomStatusDTO>> getRoomStatuses() {
-        return SuccessResponse.of(roomService.getAllRoomStatuses());
+    @PreAuthorize("hasAuthority('ROOM_WRITE')")
+    @PatchMapping("/{id}/maintenance")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void setMaintenance(@PathVariable Long id, @RequestBody java.util.Map<String, Boolean> body) {
+        roomService.setMaintenance(id, body.get("enable"));
     }
 
-    @GetMapping(value = "/status/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter streamRoomStatuses() {
-        return roomSseService.subscribe();
+    @Operation(summary = "État courant de toutes les chambres",
+               description = "Retourne l'occupation et la disponibilité de chaque chambre")
+    @PreAuthorize("hasAuthority('ROOM_READ')")
+    @GetMapping("/status")
+    public ResponseEntity<CollectionModel<EntityModel<RoomStatusDTO>>> getRoomStatuses() {
+        List<EntityModel<RoomStatusDTO>> statuses = roomService.getAllRoomStatuses()
+                .stream()
+                .map(dto -> EntityModel.of(dto,
+                        Link.of("/api/rooms/" + dto.getId() + "/patients").withRel("patients"),
+                        linkTo(methodOn(RoomController.class).getRoomStatuses()).withSelfRel()))
+                .toList();
+
+        return ResponseEntity.ok(CollectionModel.of(statuses,
+                linkTo(methodOn(RoomController.class).getRoomStatuses()).withSelfRel()));
     }
 }

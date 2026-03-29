@@ -1,0 +1,28 @@
+package mg.mbds.webservice.enums;
+
+public enum Privilege {
+
+    USER_READ,
+    USER_WRITE,
+    USER_DELETE,
+    USER_ASSIGN_ROLE,
+
+    PATIENT_READ,
+    PATIENT_WRITE,
+    PATIENT_DELETE,
+
+    STAY_READ,
+    STAY_WRITE,
+    STAY_DELETE,
+
+    PRESCRIPTION_READ,
+    PRESCRIPTION_WRITE,
+    PRESCRIPTION_DELETE,
+
+    MEDICATION_READ,
+    MEDICATION_WRITE,
+    MEDICATION_DELETE,
+
+    ROOM_READ,
+    ROOM_WRITE,
+}

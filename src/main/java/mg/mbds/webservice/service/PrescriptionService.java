@@ -1,6 +1,9 @@
 package mg.mbds.webservice.service;
 
 import mg.mbds.webservice.exception.ResourceNotFoundException;
+import mg.mbds.webservice.enums.PrescriptionStatus;
+import mg.mbds.webservice.exception.InsufficientStockException;
+import mg.mbds.webservice.exception.ResourceNotFoundException;
 import mg.mbds.webservice.model.Medication;
 import mg.mbds.webservice.model.Prescription;
 import mg.mbds.webservice.model.PrescriptionMedication;
@@ -12,6 +15,7 @@ import mg.mbds.webservice.repository.PrescriptionRepository;
 import mg.mbds.webservice.repository.StayRepository;
 import mg.mbds.webservice.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -82,6 +86,34 @@ public class PrescriptionService {
             throw new IllegalArgumentException("PrescriptionMedication does not belong to prescription: " + prescriptionId);
         }
         prescriptionMedicationRepository.deleteById(pmId);
+    }
+
+    @Transactional
+    public void cancel(Long prescriptionId) {
+        int updated = prescriptionRepository.cancel(prescriptionId);
+        if (updated == 0)
+            throw new IllegalStateException("Prescription introuvable ou déjà clôturée : " + prescriptionId);
+        List<PrescriptionMedication> lines = prescriptionMedicationRepository.findByPrescriptionId(prescriptionId);
+        for (PrescriptionMedication line : lines) {
+            medicationRepository.restoreStock(line.getMedication().getId(), line.getQuantity());
+        }
+    }
+
+    @Transactional
+    public Prescription dispense(Long prescriptionId) {
+        Prescription prescription = getById(prescriptionId);
+        if (prescription.getStatus() != PrescriptionStatus.ACTIVE) {
+            throw new IllegalStateException("Prescription is not active: " + prescriptionId);
+        }
+        List<PrescriptionMedication> lines = prescriptionMedicationRepository.findByPrescriptionId(prescriptionId);
+        for (PrescriptionMedication line : lines) {
+            int updated = medicationRepository.decrementStock(line.getMedication().getId(), line.getQuantity());
+            if (updated == 0) {
+                throw new InsufficientStockException("Stock insuffisant pour: " + line.getMedication().getName());
+            }
+        }
+        prescription.setStatus(PrescriptionStatus.DONE);
+        return prescriptionRepository.save(prescription);
     }
 
     private Stay findStay(Long id) {

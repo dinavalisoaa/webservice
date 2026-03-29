@@ -30,3 +30,6 @@ public class AuthController {
         return SuccessResponse.of(authService.register(registerDTO));
     }
 }
+
+
+}

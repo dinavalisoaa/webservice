@@ -1,0 +1,1014 @@
+{
+  "info": {
+    "_postman_id": "b6225801-b12c-4cbd-a520-934e0ca1c0b9",
+    "name": "Hospital Webservice",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "40393488"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const responseBody = pm.response.json();",
+                  "    let token;",
+                  "    ",
+                  "    // Extract token from response (adjust based on your API's response structure)",
+                  "    // Common patterns: response.token, response.data.token, response.accessToken, or the entire response",
+                  "    if (responseBody.token) {",
+                  "      token = responseBody.token;",
+                  "    } else if (responseBody.accessToken) {",
+                  "      token = responseBody.accessToken;",
+                  "    } else if (responseBody.data && responseBody.data.token) {",
+                  "      token = responseBody.data.token;",
+                  "    } else if (typeof responseBody === 'string') {",
+                  "      token = responseBody;",
+                  "    }",
+                  "    ",
+                  "    if (token) {",
+                  "      pm.collectionVariables.set('Token', token);",
+                  "      pm.test('Token saved successfully', function() {",
+                  "        pm.expect(token).to.not.be.empty;",
+                  "        pm.expect(token).to.be.a('string');",
+                  "      });",
+                  "      console.log('✓ Token saved: ' + token.substring(0, 20) + '...');",
+                  "    } else {",
+                  "      pm.test('Token extraction failed', function() {",
+                  "        pm.expect.fail('Could not extract token from response. Response: ' + JSON.stringify(responseBody));",
+                  "      });",
+                  "    }",
+                  "  } catch (error) {",
+                  "    pm.test('Error parsing response', function() {",
+                  "      pm.expect.fail('Failed to parse login response: ' + error.message);",
+                  "    });",
+                  "  }",
+                  "} else {",
+                  "  pm.test('Login failed', function() {",
+                  "    pm.expect(pm.response.code).to.equal(200);",
+                  "  });",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@hospital.mg\",\n  \"password\": \"password\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"dr.new\",\n  \"email\": \"new.doctor@hospital.mg\",\n  \"firstName\": \"New\",\n  \"lastName\": \"Doctor\",\n  \"password\": \"password\",\n  \"confirmPassword\": \"password\",\n  \"role\": \"DOCTOR\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"dr.john\",\n  \"email\": \"john@hospital.mg\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"DOCTOR\",\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "5"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Rooms",
+      "item": [
+        {
+          "name": "Get Available Rooms",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rooms/available?type=SIMPLE&minCapacity=1&minPrice=30000&maxPrice=100000&date=2026-03-25",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rooms",
+                "available"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "SIMPLE",
+                  "description": "SIMPLE | DOUBLE | VIP | REANIMATION"
+                },
+                {
+                  "key": "minCapacity",
+                  "value": "1"
+                },
+                {
+                  "key": "minPrice",
+                  "value": "30000"
+                },
+                {
+                  "key": "maxPrice",
+                  "value": "100000"
+                },
+                {
+                  "key": "date",
+                  "value": "2026-03-25",
+                  "description": "yyyy-MM-dd — defaults to today"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current Patients in Room",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rooms/3/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rooms",
+                "3",
+                "patients"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Room Statuses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rooms/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rooms",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Stream Room Statuses (SSE)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/event-stream"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rooms/status/stream",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rooms",
+                "status",
+                "stream"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Patients",
+      "item": [
+        {
+          "name": "Get All Patients",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Patient by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/patients/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"dateOfBirth\": \"1990-05-15\",\n  \"gender\": \"M\",\n  \"phoneNumber\": \"+261 34 123 456\",\n  \"address\": \"123 Rue de la Paix, Antananarivo\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Patient",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"dateOfBirth\": \"1985-08-20\",\n  \"gender\": \"F\",\n  \"phoneNumber\": \"+261 34 987 654\",\n  \"address\": \"456 Avenue de France, Antananarivo\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/patients/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Patient",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/patients/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Patients",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/patients/search?firstName=John&lastName=Doe&gender=M&minAge=20&maxAge=60",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "firstName",
+                  "value": "John",
+                  "description": "First name (optional)"
+                },
+                {
+                  "key": "lastName",
+                  "value": "Doe",
+                  "description": "Last name (optional)"
+                },
+                {
+                  "key": "gender",
+                  "value": "M",
+                  "description": "Gender: M | F (optional)"
+                },
+                {
+                  "key": "minAge",
+                  "value": "20",
+                  "description": "Minimum age (optional)"
+                },
+                {
+                  "key": "maxAge",
+                  "value": "60",
+                  "description": "Maximum age (optional)"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Stays",
+      "item": [
+        {
+          "name": "Get All Stays",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/stays",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "stays"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Stay by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/stays/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "stays",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Stay",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"startDate\": \"2026-03-25\",\n  \"endDate\": \"2026-03-26\",\n  \"diagnosis\": \"Cardiac disorder\",\n  \"notes\": \"Patient admitted for observation\",\n  \"createdBy\": \"dr.jane\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/stays?patientId=3&roomId=4&doctorId=2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "stays"
+              ],
+              "query": [
+                {
+                  "key": "patientId",
+                  "value": "3"
+                },
+                {
+                  "key": "roomId",
+                  "value": "4"
+                },
+                {
+                  "key": "doctorId",
+                  "value": "2"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Stay",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"startDate\": \"2026-03-05\",\n  \"endDate\": \"2026-03-26\",\n  \"diagnosis\": \"Diabetes type 2\",\n  \"notes\": \"Discharged after stabilisation\",\n  \"stayOutcome\": \"RECOVERED\",\n  \"createdBy\": \"dr.jane\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/stays/2?roomId=5&doctorId=3",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "stays",
+                "2"
+              ],
+              "query": [
+                {
+                  "key": "roomId",
+                  "value": "5",
+                  "description": "Optional — reassign room"
+                },
+                {
+                  "key": "doctorId",
+                  "value": "3",
+                  "description": "Optional — reassign doctor"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Stay",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/stays/5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "stays",
+                "5"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Prescriptions",
+      "item": [
+        {
+          "name": "Get All Prescriptions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/prescriptions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "prescriptions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Prescription by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/prescriptions/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "prescriptions",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Prescription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prescriptionDate\": \"2026-03-25\",\n  \"instructions\": \"Take with food. Avoid alcohol.\",\n  \"duration\": \"7 days\",\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/prescriptions?stayId=2&doctorId=3",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "prescriptions"
+              ],
+              "query": [
+                {
+                  "key": "stayId",
+                  "value": "2"
+                },
+                {
+                  "key": "doctorId",
+                  "value": "3"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Prescription",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prescriptionDate\": \"2026-03-25\",\n  \"instructions\": \"Take with food. Avoid alcohol.\",\n  \"duration\": \"10 days\",\n  \"status\": \"DONE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/prescriptions/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "prescriptions",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Prescription",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/prescriptions/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "prescriptions",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Prescription Medications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/prescriptions/1/medications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "prescriptions",
+                "1",
+                "medications"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Medication to Prescription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 2,\n  \"frequency\": \"3x per day\",\n  \"administrationRoute\": \"ORAL\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/prescriptions/1/medications?medicationId=2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "prescriptions",
+                "1",
+                "medications"
+              ],
+              "query": [
+                {
+                  "key": "medicationId",
+                  "value": "2"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Medication from Prescription",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Token}}",
+                "type": "string"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/prescriptions/1/medications/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "prescriptions",
+                "1",
+                "medications",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{Token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api"
+    },
+    {
+      "key": "Token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
