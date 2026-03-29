@@ -9,7 +9,7 @@ on:
       - main
 
 env:
-  JAVA_VERSION: '21'
+  JAVA_VERSION: '17'
   ARTIFACT_NAME: webservice-0.0.1-SNAPSHOT.jar
 
 jobs:
