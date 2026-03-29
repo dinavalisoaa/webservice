@@ -24,6 +24,15 @@ public interface MedicationRepository extends JpaRepository<Medication, Long> {
     List<MedicationStockAlertDTO> findAllWithPrescriptionCount();
 
     @Modifying
-    @Query(value = "UPDATE medication SET stock = stock - :quantity WHERE id = :medicationId AND stock >= :quantity", nativeQuery = true)
-    int decrementStock(Long medicationId, int quantity);
+            UPDATE medication
+            WHERE id = :medicationId AND stock >= :quantity
+            """, nativeQuery = true)
+            WHERE id = :medicationId
+            """, nativeQuery = true)
+    int restock(@Param("medicationId") Long medicationId, @Param("quantity") int quantity);
+
+    @Modifying
+    @Query(value = "UPDATE medication SET stock = stock + :quantity, available = TRUE WHERE id = :medicationId",
+           nativeQuery = true)
+    void restoreStock(@Param("medicationId") Long medicationId, @Param("quantity") int quantity);
 }
