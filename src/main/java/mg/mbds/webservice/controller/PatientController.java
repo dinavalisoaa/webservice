@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-import java.util.List;
 @RestController
 @RequestMapping("/patients")
 public class PatientController {
@@ -69,6 +68,7 @@ public class PatientController {
                 linkTo(methodOn(PatientController.class).getStays(id)).withSelfRel()));
     }
     @GetMapping("/{id}/medical-history")
+    @PreAuthorize("hasAuthority('PATIENT_READ')")
     public SuccessResponse<PatientMedicalHistoryDTO> getMedicalHistory(@PathVariable Long id) {
         return SuccessResponse.of(patientService.getMedicalHistory(id));
     }

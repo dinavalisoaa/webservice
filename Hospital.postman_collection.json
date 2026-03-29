@@ -202,6 +202,14 @@
           }
         },
         {
+          "name": "Get Patient Medical History",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/patients/2/medical-history",
+            "description": "Résumé médical complet : séjours, prescriptions et médicaments associés"
+          }
+        },
+        {
           "name": "Create Patient",
           "request": {
             "method": "POST",
