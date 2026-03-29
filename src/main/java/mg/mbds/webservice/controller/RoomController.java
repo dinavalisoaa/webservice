@@ -9,6 +9,8 @@ import mg.mbds.webservice.model.Patient;
 import mg.mbds.webservice.model.Room;
 import mg.mbds.webservice.service.RoomService;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
@@ -87,6 +89,13 @@ public class RoomController {
                 .withRel("room");
 
         return ResponseEntity.ok(CollectionModel.of(patients, selfLink, roomLink));
+    }
+
+    @PreAuthorize("hasAuthority('ROOM_WRITE')")
+    @PatchMapping("/{id}/maintenance")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void setMaintenance(@PathVariable Long id, @RequestBody java.util.Map<String, Boolean> body) {
+        roomService.setMaintenance(id, body.get("enable"));
     }
 
     @Operation(summary = "État courant de toutes les chambres",
