@@ -1,14 +1,18 @@
 package mg.mbds.webservice.responses;
-public record SuccessResponse<T>(T data) {
+
+import lombok.Getter;
+
+@Getter
+public class SuccessResponse<T> {
+
+    private final T data;
+
     public SuccessResponse(T data) {
         this.data = data;
     }
 
     public static <T> SuccessResponse<T> of(T data) {
-        return new SuccessResponse<T>(data);
+        return new SuccessResponse<>(data);
     }
 
-    public T data() {
-        return this.data;
-    }
 }
