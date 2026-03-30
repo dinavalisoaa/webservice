@@ -1,5 +1,6 @@
 package mg.mbds.webservice.controller;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import mg.mbds.webservice.dto.LoginDTO;
 import mg.mbds.webservice.dto.RegisterDTO;
 import mg.mbds.webservice.model.User;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/auth")
 @CrossOrigin("*")
+@SecurityRequirements
 public class AuthController {
 
     private final AuthService authService;
