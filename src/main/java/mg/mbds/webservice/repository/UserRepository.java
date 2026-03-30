@@ -13,14 +13,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
     @Query(value = """
-            SELECT u.id, u.first_name AS firstName, u.last_name AS lastName, u.username,
-                   COUNT(DISTINCT CASE WHEN s.end_date IS NULL THEN s.id END) AS activePatients,
-                   COUNT(DISTINCT s.id) AS totalPatients
-            FROM user u
-            LEFT JOIN stay s ON s.doctor_id = u.id
-            WHERE u.role = 'DOCTOR' AND u.active = TRUE
-            GROUP BY u.id, u.first_name, u.last_name, u.username
-            ORDER BY activePatients DESC
-            """, nativeQuery = true)
+    SELECT u.id, u.firstname AS firstName, u.lastname AS lastName, u.username,
+           COUNT(DISTINCT CASE WHEN s.end_date IS NULL THEN s.id END) AS activePatients,
+           COUNT(DISTINCT s.id) AS totalPatients
+    FROM users u
+    LEFT JOIN stay s ON s.doctor_id = u.id
+    WHERE u.role = 'DOCTOR' AND u.active = TRUE
+    GROUP BY u.id, u.firstname, u.lastname, u.username
+    ORDER BY activePatients DESC
+    """, nativeQuery = true)
     List<DoctorWorkloadRow> findDoctorWorkloads();
 }
