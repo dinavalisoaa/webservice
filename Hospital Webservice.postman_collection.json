@@ -1003,6 +1003,10 @@
   "variable": [
     {
       "key": "baseUrl",
+      "value": "http://ws-mbds-azewhde2brcdgfcd.centralus-01.azurewebsites.net/api"
+    },
+    {
+      "key": "baseUrlLocal",
       "value": "http://localhost:8080/api"
     },
     {
